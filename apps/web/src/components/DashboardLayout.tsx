@@ -1,0 +1,186 @@
+"use client";
+
+import { ReactNode, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useAuthStore, UserRole } from '@/store/authStore';
+import { 
+  Home, Users, BookOpen, Briefcase, BarChart3, Settings, 
+  LogOut, Menu, X, GraduationCap, Calendar, FileText 
+} from 'lucide-react';
+
+interface NavItem {
+  label: string;
+  href: string;
+  icon: ReactNode;
+  roles: UserRole[];
+}
+
+const navigationItems: NavItem[] = [
+  {
+    label: 'Dashboard',
+    href: '/dashboard',
+    icon: <Home className="w-5 h-5" />,
+    roles: ['super_admin', 'hr', 'trainer', 'manager'],
+  },
+  {
+    label: 'Mavericks',
+    href: '/mavericks',
+    icon: <Users className="w-5 h-5" />,
+    roles: ['super_admin', 'hr', 'trainer'],
+  },
+  {
+    label: 'Pipelines',
+    href: '/pipelines',
+    icon: <BookOpen className="w-5 h-5" />,
+    roles: ['super_admin', 'hr'],
+  },
+  {
+    label: 'Batches',
+    href: '/batches',
+    icon: <GraduationCap className="w-5 h-5" />,
+    roles: ['super_admin', 'hr', 'trainer'],
+  },
+  {
+    label: 'Assessments',
+    href: '/assessments',
+    icon: <FileText className="w-5 h-5" />,
+    roles: ['super_admin', 'hr', 'trainer'],
+  },
+  {
+    label: 'Deployments',
+    href: '/deployments',
+    icon: <Briefcase className="w-5 h-5" />,
+    roles: ['super_admin', 'hr', 'manager'],
+  },
+  {
+    label: 'Analytics',
+    href: '/analytics',
+    icon: <BarChart3 className="w-5 h-5" />,
+    roles: ['super_admin', 'hr'],
+  },
+  {
+    label: 'Settings',
+    href: '/settings',
+    icon: <Settings className="w-5 h-5" />,
+    roles: ['super_admin', 'hr', 'trainer', 'manager', 'maverick'],
+  },
+];
+
+interface DashboardLayoutProps {
+  children: ReactNode;
+}
+
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const router = useRouter();
+  const { user, logout } = useAuthStore();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  if (!user) {
+    router.push('/login');
+    return null;
+  }
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
+
+  // Filter navigation based on user role
+  const allowedNavItems = navigationItems.filter((item) =>
+    item.roles.includes(user.role)
+  );
+
+  return (
+    <div className="flex h-screen bg-gray-100">
+      {/* Sidebar */}
+      <aside
+        className={`${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Logo */}
+          <div className="flex items-center justify-between h-16 px-6 border-b">
+            <h1 className="text-xl font-bold text-blue-600">
+              Maverick Insights
+            </h1>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* User Info */}
+          <div className="px-6 py-4 border-b">
+            <p className="text-sm font-medium text-gray-900">{user.name}</p>
+            <p className="text-xs text-gray-500">{user.email}</p>
+            <span className="inline-block px-2 py-1 mt-2 text-xs font-medium text-blue-700 bg-blue-100 rounded">
+              {user.role.replace('_', ' ').toUpperCase()}
+            </span>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+            {allowedNavItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                onClick={() => setSidebarOpen(false)}
+              >
+                {item.icon}
+                <span className="ml-3 text-sm font-medium">{item.label}</span>
+              </Link>
+            ))}
+          </nav>
+
+          {/* Logout Button */}
+          <div className="p-4 border-t">
+            <button
+              onClick={handleLogout}
+              className="flex items-center w-full px-4 py-3 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="ml-3 text-sm font-medium">Logout</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Overlay for mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Main Content */}
+      <div className="flex flex-col flex-1 overflow-hidden">
+        {/* Top Bar */}
+        <header className="flex items-center justify-between h-16 px-6 bg-white border-b">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+          
+          <div className="flex items-center space-x-4">
+            <span className="text-sm text-gray-600">
+              Welcome back, <span className="font-medium">{user.name}</span>
+            </span>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
