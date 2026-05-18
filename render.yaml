@@ -2,7 +2,7 @@ services:
   # Backend API Service
   - type: web
     name: maverick-ascend-api
-    env: python
+    runtime: python
     region: singapore
     plan: free
     buildCommand: |
@@ -14,9 +14,11 @@ services:
       - key: PYTHON_VERSION
         value: 3.10.0
       - key: DATABASE_URL
-        fromDatabase:
-          name: maverick-postgres
-          property: connectionString
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_ALGORITHM
@@ -37,17 +39,13 @@ services:
         value: application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document
       - key: ALLOWED_EXCEL_TYPES
         value: application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv
-      - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_SERVICE_KEY
-        sync: false
       - key: ALLOWED_ORIGINS
         sync: false
 
   # Frontend Web Service
   - type: web
     name: maverick-ascend-web
-    env: node
+    runtime: node
     region: singapore
     plan: free
     buildCommand: |
@@ -62,11 +60,3 @@ services:
         value: https://maverick-ascend-api.onrender.com/api/v1
       - key: NEXT_PUBLIC_ENVIRONMENT
         value: production
-
-# Database
-databases:
-  - name: maverick-postgres
-    databaseName: maverick_db
-    user: maverick_user
-    region: singapore
-    plan: free
