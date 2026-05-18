@@ -1,26 +1,25 @@
 # MINIMAL REQUIREMENTS FOR RENDER DEPLOYMENT
-# Only packages with pre-built wheels for Python 3.14
+# Compatible with Python 3.14 - NO RUST COMPILATION
 
-# FastAPI - Core framework (REQUIRED)
-fastapi
-uvicorn
-python-multipart
+# FastAPI - Use version compatible with Pydantic v1
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
 
 # Database (REQUIRED)
-sqlalchemy
-psycopg2-binary
-alembic
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+alembic==1.13.0
 
 # Authentication (REQUIRED)
-python-jose[cryptography]
-passlib[bcrypt]
-bcrypt
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.1.1
 
-# Settings (REQUIRED) - Don't pin pydantic version, use latest
-pydantic
-pydantic-settings
-python-dotenv
-email-validator
+# Settings - Use Pydantic v1 (pure Python, no Rust)
+pydantic==1.10.13
+python-dotenv==1.0.0
+email-validator==2.1.0.post1
 
 # Excel Processing (REQUIRED for your app)
 pandas
