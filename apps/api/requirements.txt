@@ -1,10 +1,10 @@
 # RENDER DEPLOYMENT - PYDANTIC V1 FOR PYTHON 3.14 COMPATIBILITY
 # Pure Python packages only - NO RUST COMPILATION
 
-# FastAPI - Use 0.95.2 (Last version with full Pydantic v1 compatibility)
-fastapi==0.95.2
-uvicorn[standard]==0.22.0
-python-multipart==0.0.6
+# FastAPI - Use 0.85.0 (Stable with Pydantic v1, no v2 prep code)
+fastapi==0.85.0
+uvicorn[standard]==0.19.0
+python-multipart==0.0.5
 
 # Database
 sqlalchemy==2.0.23
@@ -32,8 +32,8 @@ python-docx==1.1.0
 # Utilities
 python-dateutil==2.8.2
 
-# File Storage - Let supabase manage dependencies
-supabase
+# File Storage - Pin to version 2.10.0 (compatible with older FastAPI)
+supabase==2.10.0
 
 # OCR - DISABLED (causes Rust compilation errors on Python 3.14)
 # pytesseract
