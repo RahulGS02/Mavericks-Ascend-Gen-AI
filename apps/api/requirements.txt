@@ -1,9 +1,9 @@
 # RENDER DEPLOYMENT - PYDANTIC V1 FOR PYTHON 3.14 COMPATIBILITY
 # Pure Python packages only - NO RUST COMPILATION
 
-# FastAPI - Version compatible with Pydantic v1
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
+# FastAPI - MUST use version fully compatible with Pydantic v1
+fastapi==0.100.1
+uvicorn[standard]==0.23.2
 python-multipart==0.0.6
 
 # Database
