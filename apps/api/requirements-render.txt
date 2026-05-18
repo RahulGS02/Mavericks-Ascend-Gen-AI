@@ -1,0 +1,55 @@
+# MINIMAL REQUIREMENTS FOR RENDER DEPLOYMENT
+# Only packages with pre-built wheels for Python 3.14
+
+# FastAPI - Core framework (REQUIRED)
+fastapi
+uvicorn
+python-multipart
+
+# Database (REQUIRED)
+sqlalchemy
+psycopg2-binary
+alembic
+
+# Authentication (REQUIRED)
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt
+
+# Settings (REQUIRED) - Don't pin pydantic version, use latest
+pydantic
+pydantic-settings
+python-dotenv
+email-validator
+
+# Excel Processing (REQUIRED for your app)
+pandas
+openpyxl
+
+# Document Processing (REQUIRED for your app)
+PyPDF2
+python-docx
+
+# Utilities (REQUIRED)
+python-dateutil
+
+# File Storage (REQUIRED)
+supabase
+storage3
+
+# AI/ML (OPTIONAL - Can be disabled)
+# openai
+
+# OCR (DISABLED - Causes build issues)
+# pytesseract
+# pdf2image
+# Pillow
+# pdfplumber
+
+# Auggie SDK (DISABLED - Compatibility issues)
+# auggie-sdk
+
+# Testing (NOT NEEDED in production)
+# pytest
+# pytest-asyncio
+# httpx
