@@ -3,7 +3,7 @@
  */
 import axios, { AxiosError, AxiosInstance } from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
@@ -46,20 +46,20 @@ export default api;
 // API endpoints
 export const authAPI = {
   login: (email: string, password: string) =>
-    api.post('/api/v1/auth/login', { email, password }),
-  
+    api.post('/auth/login', { email, password }),
+
   register: (data: { email: string; password: string; name: string; role: string }) =>
-    api.post('/api/v1/auth/register', data),
-  
+    api.post('/auth/register', data),
+
   getCurrentUser: () =>
-    api.get('/api/v1/auth/me'),
-  
+    api.get('/auth/me'),
+
   changePassword: (currentPassword: string, newPassword: string) =>
-    api.post('/api/v1/auth/change-password', {
+    api.post('/auth/change-password', {
       current_password: currentPassword,
       new_password: newPassword,
     }),
-  
+
   logout: () =>
-    api.post('/api/v1/auth/logout'),
+    api.post('/auth/logout'),
 };

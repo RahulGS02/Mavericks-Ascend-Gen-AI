@@ -1,0 +1,186 @@
+================================================================================
+              MAVERICKS ASCEND - ROLE PERMISSIONS SUMMARY
+================================================================================
+
+Quick reference for what each role can do in the platform
+
+================================================================================
+                          1. MAVERICK (Trainee)
+================================================================================
+
+CAN DO:
+✅ Register and create own profile
+✅ Upload resume for AI processing
+✅ Update own profile (limited fields)
+✅ View training schedule
+✅ View assessment results
+✅ Track skill proficiency
+✅ View deployment status
+✅ View AI-generated insights
+
+CANNOT DO:
+❌ Access other mavericks' profiles
+❌ Modify educational details after approval
+❌ Create or modify batches/pipelines
+❌ Enter assessment marks
+❌ Deploy themselves
+❌ Access admin features
+
+KEY PAGES:
+- /mavericks/register - Registration
+- /mavericks/profile - My Profile
+- /maverick/dashboard - Personal Dashboard
+
+================================================================================
+                          2. HR (Human Resources)
+================================================================================
+
+CAN DO:
+✅ Review and approve/reject maverick profiles
+✅ Create and manage mavericks manually
+✅ Create and manage pipelines
+✅ Create and manage batches
+✅ Assign mavericks to batches
+✅ Schedule training sessions
+✅ Create assessments
+✅ View all assessment results
+✅ Manage deployment requests
+✅ Deploy mavericks to managers
+✅ Send bulk notifications
+✅ View platform analytics
+✅ Manage reattempt requests
+
+CANNOT DO:
+❌ Create/delete users (other than mavericks)
+❌ Access AI cost analytics
+❌ Modify system settings
+❌ View audit logs
+❌ Mark training sessions complete (Trainer only)
+
+KEY PAGES:
+- /dashboard - HR Dashboard
+- /mavericks - All Mavericks Management
+- /pipelines - Pipeline Creation & Management
+- /batches - Batch Management
+- /training - Training Session Scheduling
+- /assessments - Assessment Management
+- /deployments - Deployment Management
+- /analytics - Platform Analytics
+
+================================================================================
+                        3. SUPER ADMIN (Platform Admin)
+================================================================================
+
+CAN DO:
+✅ ALL HR features (full access)
+✅ Create users for ALL roles
+✅ Edit/delete any user
+✅ View AI cost analytics (critical)
+✅ Configure AI settings and limits
+✅ View audit logs
+✅ Access security monitoring
+✅ Configure platform settings
+✅ Manage database
+✅ Emergency actions (force logout, maintenance mode)
+✅ View detailed platform statistics
+
+CANNOT DO:
+❌ Nothing - Super Admin has full platform access
+
+KEY PAGES:
+- All HR pages +
+- /admin/users - User Management
+- /admin/ai-analytics - AI Cost Dashboard
+- /admin/audit-logs - Audit Trail
+- /admin/settings - Platform Configuration
+- /admin/security - Security Monitoring
+
+================================================================================
+                          4. TRAINER (Instructor)
+================================================================================
+
+CAN DO:
+✅ View assigned batches and mavericks
+✅ Mark training sessions as complete
+✅ Create assessments for assigned batches
+✅ Enter assessment marks (Single/Bulk/Excel)
+✅ View batch progress
+✅ View maverick performance in assigned batches
+✅ View training calendar
+✅ Track own training statistics
+
+CANNOT DO:
+❌ Create or modify pipelines
+❌ Create batches
+❌ Assign mavericks to batches
+❌ Approve/reject profiles
+❌ Deploy mavericks
+❌ Access AI cost data
+❌ Modify platform settings
+
+KEY PAGES:
+- /trainer/dashboard - Trainer Dashboard
+- /batches - View Assigned Batches
+- /assessments - Assessment Management
+- /training - My Training Sessions
+- /mavericks - View Mavericks in My Batches
+
+================================================================================
+                          5. MANAGER (Project Manager)
+================================================================================
+
+CAN DO:
+✅ Search for available mavericks
+✅ View maverick profiles (read-only)
+✅ Create deployment requests
+✅ View AI-powered candidate recommendations
+✅ Shortlist candidates
+✅ View assigned team members
+✅ Release mavericks from projects
+✅ View deployment analytics
+
+CANNOT DO:
+❌ Create or modify mavericks
+❌ Access training management
+❌ Create assessments
+❌ View other managers' teams
+❌ Directly deploy (must request via HR)
+❌ Access platform configuration
+
+KEY PAGES:
+- /manager/dashboard - Manager Dashboard
+- /manager/search - Talent Search
+- /manager/requests - My Deployment Requests
+- /manager/team - My Deployed Team
+- /deployments - View Deployments
+
+================================================================================
+                      PERMISSION COMPARISON TABLE
+================================================================================
+
+Feature                    | Maverick | Trainer | HR | Manager | Super Admin
+---------------------------|----------|---------|----|---------|-----------
+View Own Profile           |    ✅    |   ✅    | ✅ |   ✅    |     ✅
+Update Own Profile         |  Limited |   ✅    | ✅ |   ✅    |     ✅
+View Other Profiles        |    ❌    | Batch   | ✅ |   ✅    |     ✅
+Create Mavericks           |    ❌    |   ❌    | ✅ |   ❌    |     ✅
+Review Profiles            |    ❌    |   ❌    | ✅ |   ❌    |     ✅
+Create Pipelines           |    ❌    |   ❌    | ✅ |   ❌    |     ✅
+Create Batches             |    ❌    |   ❌    | ✅ |   ❌    |     ✅
+Schedule Training          |    ❌    |   ❌    | ✅ |   ❌    |     ✅
+Mark Session Complete      |    ❌    |   ✅    | ❌ |   ❌    |     ✅
+Create Assessments         |    ❌    |   ✅    | ✅ |   ❌    |     ✅
+Enter Marks                |    ❌    |   ✅    | ✅ |   ❌    |     ✅
+View All Results           |   Own   |  Batch  | ✅ |   ❌    |     ✅
+Search Talent              |    ❌    |   ❌    | ✅ |   ✅    |     ✅
+Request Deployment         |    ❌    |   ❌    | ❌ |   ✅    |     ✅
+Deploy Mavericks           |    ❌    |   ❌    | ✅ |   ❌    |     ✅
+View Analytics             |   Own   |   Own   | ✅ |   Own   |     ✅
+AI Cost Analytics          |    ❌    |   ❌    | ❌ |   ❌    |     ✅
+Audit Logs                 |    ❌    |   ❌    | ❌ |   ❌    |     ✅
+User Management            |    ❌    |   ❌    | ❌ |   ❌    |     ✅
+Platform Settings          |    ❌    |   ❌    | ❌ |   ❌    |     ✅
+
+================================================================================
+                              END OF SUMMARY
+================================================================================

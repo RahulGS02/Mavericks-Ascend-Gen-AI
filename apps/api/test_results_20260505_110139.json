@@ -1,0 +1,96 @@
+{
+  "timestamp": "2026-05-05T11:01:39.114467",
+  "total_tests": 14,
+  "passed": 12,
+  "failed": 2,
+  "pass_rate": 85.71428571428571,
+  "tests": [
+    {
+      "test": "HR Login",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-05-05T11:00:40.637717"
+    },
+    {
+      "test": "Trainer Login",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-05-05T11:00:45.130275"
+    },
+    {
+      "test": "Maverick Login",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-05-05T11:00:49.589910"
+    },
+    {
+      "test": "Find Q3 React Batch",
+      "passed": true,
+      "details": "Batch ID: 40aad34b-7b19-4b29-b263-61c351c4c98a",
+      "timestamp": "2026-05-05T11:00:52.298195"
+    },
+    {
+      "test": "Get Pipeline Jobs",
+      "passed": true,
+      "details": "Found 2 jobs",
+      "timestamp": "2026-05-05T11:00:56.040546"
+    },
+    {
+      "test": "Find Pending Maverick",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-05-05T11:00:58.785648"
+    },
+    {
+      "test": "Approve & Assign Maverick",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-05-05T11:01:02.882946"
+    },
+    {
+      "test": "Schedule Training",
+      "passed": false,
+      "details": "{\"detail\":\"This job is already scheduled for this batch\"}",
+      "timestamp": "2026-05-05T11:01:07.836311"
+    },
+    {
+      "test": "Schedule Assessment",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-05-05T11:01:13.738703"
+    },
+    {
+      "test": "Submit Assessment Marks",
+      "passed": true,
+      "details": "4 submissions: 3 passed, 1 failed",
+      "timestamp": "2026-05-05T11:01:17.745408"
+    },
+    {
+      "test": "Submit Trainer Feedback",
+      "passed": true,
+      "details": "5-star rating submitted",
+      "timestamp": "2026-05-05T11:01:22.302174"
+    },
+    {
+      "test": "Get Dashboard Stats",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-05-05T11:01:28.683413"
+    },
+    {
+      "test": "Get Analytics Overview",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-05-05T11:01:35.616041"
+    },
+    {
+      "test": "Get Top Performers",
+      "passed": false,
+      "details": "",
+      "timestamp": "2026-05-05T11:01:39.093401"
+    }
+  ],
+  "batch_id": "40aad34b-7b19-4b29-b263-61c351c4c98a",
+  "pipeline_id": "4ed77d9a-323d-49ea-851f-f62e98a847fc",
+  "maverick_id": "dd86e496-bc93-4981-8624-7b29d5ecfa45"
+}

@@ -1,0 +1,271 @@
+================================================================================
+           MAVERICKS ASCEND - COMPLETE PLATFORM WORKFLOW
+================================================================================
+
+This document shows the complete lifecycle flow from registration to deployment
+
+================================================================================
+                    COMPLETE MAVERICK JOURNEY FLOW
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                              │
+│                      MAVERICK LIFECYCLE: START TO FINISH                     │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+PHASE 1: REGISTRATION & ONBOARDING
+───────────────────────────────────────────────────────────────────────────────
+
+    [Maverick]              [AI Service]              [HR]
+        │                        │                      │
+        │─── Register ──────────>│                      │
+        │    (Self-service)      │                      │
+        │                        │                      │
+        │─── Upload Resume ─────>│                      │
+        │                        │                      │
+        │                        │─── Parse Resume ────>│
+        │                        │    Extract Skills    │
+        │                        │    Generate Summary  │
+        │                        │                      │
+        │<─── Profile Created ───┤                      │
+        │    Status: PENDING     │                      │
+        │                        │                      │
+        │                        │                      │
+        │                        │<─── Review Profile ──┤
+        │                        │                      │
+        │<────────────────── APPROVED/REJECTED ─────────┤
+        │                                               │
+        │                                               │
+        ▼                                               │
+   [WAITING FOR                                         │
+    BATCH ASSIGNMENT]                                   │
+                                                        │
+                                                        │
+PHASE 2: BATCH ASSIGNMENT & TRAINING SETUP                                    
+───────────────────────────────────────────────────────────────────────────────
+
+    [HR]                    [System]              [Trainer]
+     │                         │                      │
+     │─── Create Pipeline ────>│                      │
+     │    (Training Path)      │                      │
+     │                         │                      │
+     │─── Create Batch ───────>│                      │
+     │    - Select Pipeline    │                      │
+     │    - Assign Mavericks   │                      │
+     │                         │                      │
+     │                         │─── Auto-create ─────>│
+     │                         │    Job Progress      │
+     │                         │    Records           │
+     │                         │                      │
+     │─── Schedule Training ──>│                      │
+     │    - Assign Trainer     │                      │
+     │    - Set Date/Time      │                      │
+     │                         │                      │
+     │                         │<─── Notification ────┤
+     │                         │                      │
+     │                         │                      │
+     ▼                         ▼                      ▼
+[Batch Active]         [Mavericks Notified]  [Trainer Assigned]
+
+
+PHASE 3: TRAINING & ASSESSMENT CYCLE
+───────────────────────────────────────────────────────────────────────────────
+
+Pipeline: Job 1 → Job 2 → Job 3 → ... → Job N
+
+For EACH Job in Pipeline:
+─────────────────────────
+
+IF Job Type = TRAINING:
+┌──────────────────────────┐
+│  [Trainer]               │
+│  1. Conduct Session      │
+│  2. Mark as Complete     │
+│  3. Enter Notes          │
+│                          │
+│  [System]                │
+│  → Update Progress       │
+│  → Unlock Next Job       │
+│                          │
+│  [Maverick]              │
+│  → View Completion ✓     │
+└──────────────────────────┘
+
+IF Job Type = ASSESSMENT:
+┌──────────────────────────┐
+│  [Trainer/HR]            │
+│  1. Create Assessment    │
+│  2. Set Max Marks        │
+│  3. Set Passing Marks    │
+│  4. Schedule Date        │
+│                          │
+│  [Maverick]              │
+│  → Take Assessment       │
+│  → Submit                │
+│                          │
+│  [Trainer]               │
+│  1. Enter Marks          │
+│     (Single/Bulk/Excel)  │
+│  2. Submit               │
+│                          │
+│  [System]                │
+│  → Calculate Pass/Fail   │
+│  → Update Skill          │
+│     Proficiency          │
+│  → Update Progress       │
+│                          │
+│  IF FAIL:                │
+│    [Maverick]            │
+│    → Request Reattempt   │
+│                          │
+│    [HR]                  │
+│    → Approve/Reject      │
+│                          │
+│    IF APPROVED:          │
+│      → Reattempt         │
+│      → Regrade           │
+│                          │
+│  IF PASS:                │
+│    → Unlock Next Job     │
+└──────────────────────────┘
+
+IF Job Type = PROJECT:
+┌──────────────────────────┐
+│  [Maverick]              │
+│  → Complete Project      │
+│  → Submit                │
+│                          │
+│  [Trainer]               │
+│  → Review & Grade        │
+│  → Mark Complete         │
+│                          │
+│  [System]                │
+│  → Update Progress       │
+└──────────────────────────┘
+
+Repeat for ALL Jobs in Pipeline...
+
+
+PHASE 4: BATCH COMPLETION
+───────────────────────────────────────────────────────────────────────────────
+
+    [System]                [HR]              [Maverick]
+        │                    │                     │
+        │─── All Jobs ──────>│                     │
+        │    Completed       │                     │
+        │                    │                     │
+        │                    │─── Review ─────────>│
+        │                    │    Performance      │
+        │                    │                     │
+        │                    │─── Update Status ──>│
+        │                    │    to "AVAILABLE"   │
+        │                    │                     │
+        ▼                    ▼                     ▼
+   [Batch Complete]    [Ready for         [Ready for
+                        Deployment]         Deployment]
+
+
+PHASE 5: DEPLOYMENT PROCESS
+───────────────────────────────────────────────────────────────────────────────
+
+    [Manager]              [HR]              [Maverick]
+        │                   │                     │
+        │─── Search ───────>│                     │
+        │    Talent         │                     │
+        │                   │                     │
+        │<─── View ─────────┤                     │
+        │    Available      │                     │
+        │    Mavericks      │                     │
+        │                   │                     │
+        │─── Create ───────>│                     │
+        │    Deployment     │                     │
+        │    Request        │                     │
+        │                   │                     │
+        │                   │─── Review Request   │
+        │                   │                     │
+        │                   │─── Approve/Reject   │
+        │                   │                     │
+        │<─── Response ─────┤                     │
+        │    (Approved)     │                     │
+        │                   │                     │
+        │                   │─── Assign ─────────>│
+        │                   │    to Manager       │
+        │                   │                     │
+        │                   │<─── Notification ───┤
+        │                   │                     │
+        │<──────── Maverick Deployed ─────────────┤
+        │                                         │
+        │                                         │
+        ▼                                         ▼
+   [Managing Team]                         [Status: DEPLOYED]
+
+
+PHASE 6: POST-DEPLOYMENT
+───────────────────────────────────────────────────────────────────────────────
+
+    [Manager]              [HR]              [Maverick]
+        │                   │                     │
+        │─── Project ──────>│                     │
+        │    Complete       │                     │
+        │                   │                     │
+        │─── Release ──────>│                     │
+        │    Maverick       │                     │
+        │                   │                     │
+        │                   │─── Update Status ──>│
+        │                   │    to "ON_BENCH"    │
+        │                   │                     │
+        ▼                   ▼                     ▼
+   [Request New]      [Maverick         [Awaiting Next
+    Resource]          Available]         Assignment]
+
+
+================================================================================
+                         AI INTEGRATION WORKFLOW
+================================================================================
+
+AI is integrated at multiple points:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                              │
+│  1. REGISTRATION                                                             │
+│     Resume Upload → AI Parser → Extract:                                    │
+│     - Skills                                                                 │
+│     - Education                                                              │
+│     - Experience                                                             │
+│     - Generate Summary                                                       │
+│                                                                              │
+│  2. PIPELINE CREATION                                                        │
+│     HR Input: "Full Stack Developer"                                        │
+│     → AI Suggests Complete Training Pipeline                                │
+│     → Including all jobs, duration, sequence                                │
+│                                                                              │
+│  3. BATCH CREATION                                                           │
+│     HR: Select Pipeline                                                      │
+│     → AI Analyzes Maverick Profiles                                         │
+│     → Suggests Optimal Grouping                                             │
+│     → Based on Skills, Background, Learning Pace                            │
+│                                                                              │
+│  4. ASSESSMENT GRADING                                                       │
+│     Marks Entered → AI Updates Skill Proficiency                            │
+│     → Calculates proficiency levels per skill                               │
+│     → Tracks growth over time                                               │
+│                                                                              │
+│  5. DEPLOYMENT MATCHING                                                      │
+│     Manager: Search for "React + Node.js" developer                         │
+│     → AI Ranks Candidates by Skill Match                                    │
+│     → Provides Match Score %                                                │
+│     → Recommends Top 5                                                      │
+│                                                                              │
+│  6. PERFORMANCE INSIGHTS                                                     │
+│     → AI Analyzes Assessment Trends                                         │
+│     → Identifies At-Risk Mavericks                                          │
+│     → Suggests Interventions                                                │
+│     → Predicts Deployment Readiness                                         │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+                              END OF WORKFLOW
+================================================================================

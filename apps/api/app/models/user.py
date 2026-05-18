@@ -33,7 +33,8 @@ class User(Base):
     # Relationships
     maverick = relationship("Maverick", back_populates="user", uselist=False, foreign_keys="Maverick.user_id")
     created_pipelines = relationship("Pipeline", back_populates="creator", foreign_keys="Pipeline.created_by")
-    trained_batches = relationship("Batch", back_populates="trainer", foreign_keys="Batch.trainer_id")
+    trained_batches = relationship("Batch", back_populates="trainer", foreign_keys="Batch.trainer_id")  # Legacy single trainer
+    trainer_assignments = relationship("BatchTrainer", foreign_keys="BatchTrainer.trainer_id", back_populates="trainer")  # New: Multiple batch assignments
     
     def __repr__(self):
         return f"<User {self.email} ({self.role})>"

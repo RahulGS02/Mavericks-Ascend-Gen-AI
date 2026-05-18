@@ -10,9 +10,26 @@ from ..database import Base
 
 class JobType(str, enum.Enum):
     """Types of jobs in a pipeline"""
-    TRAINING = "training"
-    ASSESSMENT = "assessment"
-    DEPLOYMENT = "deployment"
+    TRAINING = "TRAINING"
+    ASSESSMENT = "ASSESSMENT"
+    DEPLOYMENT = "DEPLOYMENT"
+
+
+class PipelineStatus(str, enum.Enum):
+    """Status of a pipeline"""
+    DRAFT = "DRAFT"
+    ACTIVE = "ACTIVE"
+    COMPLETED = "COMPLETED"
+    ARCHIVED = "ARCHIVED"
+
+
+class JobStatus(str, enum.Enum):
+    """Status of a job"""
+    PENDING = "PENDING"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    SKIPPED = "SKIPPED"
 
 
 class Pipeline(Base):
@@ -24,9 +41,9 @@ class Pipeline(Base):
     description = Column(Text)
     created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     is_template = Column(Boolean, default=False, nullable=False)
-    status = Column(String(50), default="active", nullable=False)
+    status = Column(SQLEnum(PipelineStatus, values_callable=lambda x: [e.value for e in x]), default=PipelineStatus.DRAFT, nullable=False)
     
     # Relationships
     creator = relationship("User", back_populates="created_pipelines")
@@ -43,14 +60,18 @@ class PipelineJob(Base):
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     pipeline_id = Column(UUID(as_uuid=True), ForeignKey("pipelines.id", ondelete="CASCADE"), nullable=False)
-    
+
     # Job Details
-    job_name = Column(String(255), nullable=False)
-    job_type = Column(SQLEnum(JobType), nullable=False)
+    name = Column(String(255), nullable=False)  # Changed from job_name to name
+    job_type = Column(SQLEnum(JobType, values_callable=lambda x: [e.value for e in x]), nullable=False)
     sequence_order = Column(Integer, nullable=False)
     is_mandatory = Column(Boolean, default=True, nullable=False)
     duration_days = Column(Integer, nullable=True)
     description = Column(Text)
+    prerequisites = Column(Text, nullable=True)  # Added prerequisites field
+    status = Column(SQLEnum(JobStatus, values_callable=lambda x: [e.value for e in x]), default=JobStatus.PENDING, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Job-specific configuration (e.g., assessment details, training modules)
     job_metadata = Column(JSONB, default=dict)
@@ -58,7 +79,7 @@ class PipelineJob(Base):
     # Relationships
     pipeline = relationship("Pipeline", back_populates="jobs")
     progress_records = relationship("MaverickJobProgress", back_populates="job")
-    assessment_attempts = relationship("AssessmentAttempt", back_populates="job")
+    batch_schedules = relationship("BatchJobSchedule", back_populates="pipeline_job", cascade="all, delete-orphan")
     
     def __repr__(self):
-        return f"<PipelineJob {self.job_name} (Order: {self.sequence_order})>"
+        return f"<PipelineJob {self.name} (Order: {self.sequence_order})>"

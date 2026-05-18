@@ -8,13 +8,17 @@ import enum
 from ..database import Base
 
 
-class JobProgressStatus(str, enum.Enum):
+class ProgressStatus(str, enum.Enum):
     """Status of a maverick's progress on a job"""
-    NOT_STARTED = "not_started"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    SKIPPED = "skipped"
-    FAILED_ASSESSMENT = "failed_assessment"
+    PENDING = "PENDING"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    SKIPPED = "SKIPPED"
+
+
+# Alias for backwards compatibility
+JobProgressStatus = ProgressStatus
 
 
 class MaverickJobProgress(Base):
@@ -27,11 +31,14 @@ class MaverickJobProgress(Base):
     job_id = Column(UUID(as_uuid=True), ForeignKey("pipeline_jobs.id"), nullable=False)
     
     # Progress Details
-    status = Column(SQLEnum(JobProgressStatus), default=JobProgressStatus.NOT_STARTED, nullable=False)
+    status = Column(SQLEnum(ProgressStatus, values_callable=lambda x: [e.value for e in x]), default=ProgressStatus.PENDING, nullable=False)
     started_at = Column(DateTime(timezone=True), nullable=True)
     completed_at = Column(DateTime(timezone=True), nullable=True)
     completion_percentage = Column(Numeric(5, 2), default=0, nullable=False)
+    score = Column(Numeric(5, 2), nullable=True)  # For assessment jobs
     notes = Column(Text)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
     # Relationships
     maverick = relationship("Maverick", back_populates="job_progress")

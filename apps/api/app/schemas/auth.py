@@ -1,9 +1,10 @@
 """
 Authentication schemas for request/response validation
 """
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_serializer
 from typing import Optional
 from datetime import datetime
+from uuid import UUID
 
 
 class UserRegister(BaseModel):
@@ -35,13 +36,25 @@ class TokenData(BaseModel):
 
 class UserResponse(BaseModel):
     """User response schema"""
-    id: str
+    id: UUID
     email: str
     name: str
     role: str
     is_active: bool
     created_at: datetime
     last_login: Optional[datetime] = None
+
+    @field_serializer('id')
+    def serialize_uuid(self, value):
+        """Convert UUID to string"""
+        return str(value)
+
+    @field_serializer('role')
+    def serialize_role(self, value):
+        """Convert enum to string"""
+        if hasattr(value, 'value'):
+            return value.value
+        return value
 
     class Config:
         from_attributes = True

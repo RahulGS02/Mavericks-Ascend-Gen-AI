@@ -108,3 +108,8 @@ async def get_manager_user(current_user: User = Depends(require_role([UserRole.M
 async def get_maverick_user(current_user: User = Depends(require_role([UserRole.MAVERICK]))) -> User:
     """Require maverick role"""
     return current_user
+
+
+async def get_trainer_or_admin(current_user: User = Depends(require_role([UserRole.TRAINER, UserRole.HR, UserRole.SUPER_ADMIN]))) -> User:
+    """Require trainer, HR, or super admin role"""
+    return current_user

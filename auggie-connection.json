@@ -1,0 +1,513 @@
+{
+  "auggie_sdk_connection_details": {
+    "overview": {
+      "description": "The project uses Auggie SDK (auggie-sdk Python package) to connect with Augment Code's AI services",
+      "primary_mode": "DirectContext (Headless Authentication)",
+      "fallback_mode": "Direct REST API calls",
+      "package": "auggie-sdk",
+      "installation": "pip install auggie-sdk"
+    },
+    
+    "configuration": {
+      "environment_variables": {
+        "AUGMENT_AI_ACCESS_TOKEN": {
+          "description": "Authentication token for Augment AI API",
+          "required": true,
+          "source": ".env file",
+          "example": "your-augment-access-token"
+        },
+        "AUGMENT_AI_TENANT_URL": {
+          "description": "Tenant-specific API endpoint URL",
+          "required": true,
+          "default": "https://e7.api.augmentcode.com/",
+          "source": ".env file"
+        },
+        "AUGMENT_AI_API_URL": {
+          "description": "Generic API URL for fallback",
+          "required": false,
+          "default": "https://api.augmentcode.com",
+          "source": ".env file"
+        },
+        "AUGMENT_AI_MAX_TOKENS": {
+          "description": "Maximum tokens for AI responses",
+          "required": false,
+          "default": 8000,
+          "type": "integer",
+          "source": ".env file"
+        },
+        "AUGMENT_AI_MODEL": {
+          "description": "AI model name to use",
+          "required": false,
+          "default": "sonnet4.5",
+          "options": ["sonnet4.5", "gpt4"],
+          "source": ".env file"
+        }
+      },
+      
+      "config_loading": {
+        "file": "src/config/config.py",
+        "class": "AugmentAIConfig",
+        "loading_mechanism": "Pydantic BaseModel with Field factories",
+        "environment_loading": "dotenv (load_dotenv())",
+        "code_example": {
+          "class_definition": "class AugmentAIConfig(BaseModel):\n    access_token: str = Field(default_factory=lambda: os.getenv('AUGMENT_AI_ACCESS_TOKEN', ''))\n    tenant_url: str = Field(default_factory=lambda: os.getenv('AUGMENT_AI_TENANT_URL', 'https://e7.api.augmentcode.com/'))\n    api_url: str = Field(default_factory=lambda: os.getenv('AUGMENT_AI_API_URL', 'https://e7.api.augmentcode.com/'))\n    max_tokens: int = Field(default_factory=lambda: int(os.getenv('AUGMENT_AI_MAX_TOKENS', '8000')))\n    model: str = Field(default_factory=lambda: os.getenv('AUGMENT_AI_MODEL', 'sonnet4.5'))"
+        }
+      }
+    },
+    
+    "connection_initialization": {
+      "step_1_import_sdk": {
+        "description": "Import DirectContext and File from auggie_sdk.context module",
+        "code": "from auggie_sdk.context import DirectContext, File",
+        "error_handling": {
+          "exception": "ImportError",
+          "action": "Set AUGGIE_SDK_AVAILABLE = False and use fallback mode"
+        }
+      },
+      
+      "step_2_client_initialization": {
+        "description": "Initialize AugmentAIClient class which manages the connection",
+        "file": "src/ai/augment_ai_client.py",
+        "class": "AugmentAIClient",
+        "init_method": "__init__",
+        "process": [
+          "Initialize logger (Logger('AugmentAIClient'))",
+          "Initialize prompt manager (PromptManager())",
+          "Check if AI is configured (config.is_ai_configured())",
+          "Check if auggie_sdk is available",
+          "Initialize DirectContext if SDK available"
+        ]
+      },
+      
+      "step_3_direct_context_creation": {
+        "description": "Create DirectContext instance for headless authentication (bypasses ACP - Augment Control Plane)",
+        "method": "DirectContext.create()",
+        "parameters": {
+          "api_key": {
+            "description": "Authentication token from config",
+            "source": "config.augment_ai.access_token",
+            "type": "string"
+          },
+          "api_url": {
+            "description": "Tenant-specific API endpoint",
+            "source": "config.augment_ai.tenant_url",
+            "type": "string"
+          },
+          "debug": {
+            "description": "Enable debug mode",
+            "value": false,
+            "type": "boolean"
+          }
+        },
+        "code_example": "self.context = DirectContext.create(\n    api_key=access_token,\n    api_url=tenant_url,\n    debug=False\n)",
+        "success_log": "✅ DirectContext initialized successfully"
+      },
+      
+      "step_4_index_initialization": {
+        "description": "Initialize the DirectContext index with a placeholder file (required before using search_and_ask)",
+        "method": "context.add_to_index()",
+        "parameters": {
+          "files": "List of File objects"
+        },
+        "placeholder_file": {
+          "path": "_init.txt",
+          "contents": "Initialization placeholder for DirectContext"
+        },
+        "code_example": "self.context.add_to_index([\n    File(path='_init.txt', contents='Initialization placeholder for DirectContext')\n])",
+        "purpose": "DirectContext requires at least one file in the index before calling search_and_ask"
+      },
+      
+      "step_5_error_handling": {
+        "description": "Handle initialization failures and fallback to direct API mode",
+        "exceptions_caught": ["Exception"],
+        "fallback_action": "Set self.context = None and use direct API mode",
+        "error_log": "Failed to initialize DirectContext: {error_message}",
+        "fallback_log": "Falling back to direct API mode"
+      }
+    },
+    
+    "making_api_calls": {
+      "primary_method": {
+        "method_name": "chat_completion",
+        "file": "src/ai/augment_ai_client.py",
+        "description": "Main method to get AI responses using DirectContext or fallback",
+        "signature": "def chat_completion(self, messages: List[Dict[str, str]], temperature: float = 0.7, max_tokens: Optional[int] = None, timeout: int = 600) -> str",
+        
+        "parameters": {
+          "messages": {
+            "type": "List[Dict[str, str]]",
+            "description": "List of message dictionaries with 'role' and 'content' keys",
+            "example": [
+              {"role": "system", "content": "You are a helpful assistant"},
+              {"role": "user", "content": "Generate a test case"}
+            ],
+            "roles": ["system", "user", "assistant"]
+          },
+          "temperature": {
+            "type": "float",
+            "description": "Sampling temperature for randomness (0.0 to 1.0)",
+            "default": 0.7,
+            "range": "0.0 - 1.0"
+          },
+          "max_tokens": {
+            "type": "Optional[int]",
+            "description": "Maximum tokens in AI response",
+            "default": "Uses config.augment_ai.max_tokens (8000)"
+          },
+          "timeout": {
+            "type": "int",
+            "description": "Request timeout in seconds",
+            "default": 600,
+            "note": "10 minutes default for complex generations"
+          }
+        },
+        
+        "return_value": {
+          "type": "str",
+          "description": "AI-generated response text"
+        }
+      },
+      
+      "request_flow_with_directcontext": {
+        "step_1_check_context": {
+          "description": "Check if DirectContext is available",
+          "condition": "if not self.context",
+          "action_if_false": "Use direct API fallback",
+          "action_if_true": "Proceed with DirectContext"
+        },
+        
+        "step_2_convert_messages": {
+          "description": "Convert message list to single prompt string (DirectContext.search_and_ask expects string)",
+          "process": [
+            "Iterate through messages list",
+            "Format each message based on role",
+            "System role: 'System: {content}'",
+            "User role: '{content}'",
+            "Assistant role: 'Assistant: {content}'",
+            "Join all parts with double newlines"
+          ],
+          "code_example": "prompt_parts = []\nfor msg in messages:\n    role = msg.get('role', 'user')\n    content = msg.get('content', '')\n    if role == 'system':\n        prompt_parts.append(f'System: {content}')\n    elif role == 'user':\n        prompt_parts.append(f'{content}')\n    elif role == 'assistant':\n        prompt_parts.append(f'Assistant: {content}')\n\nfull_prompt = '\\n\\n'.join(prompt_parts)"
+        },
+        
+        "step_3_retry_logic": {
+          "description": "Implement retry mechanism for transient errors",
+          "max_retries": 3,
+          "retry_delay_seconds": 5,
+          "transient_error_keywords": [
+            "ended prematurely",
+            "timeout",
+            "connection",
+            "network"
+          ],
+          "retry_process": [
+            "Attempt 1: Immediate call",
+            "Attempt 2: Wait 5 seconds, retry",
+            "Attempt 3: Wait 5 seconds, retry",
+            "After 3 failures: Raise exception (do NOT use broken API fallback)"
+          ]
+        },
+        
+        "step_4_call_search_and_ask": {
+          "description": "Call DirectContext.search_and_ask to get AI response",
+          "method": "self.context.search_and_ask()",
+          "parameters": {
+            "search_query": {
+              "value": "\"\"",
+              "description": "Empty string - we just use the prompt, no search needed"
+            },
+            "prompt": {
+              "value": "full_prompt",
+              "description": "Complete prompt string converted from messages"
+            }
+          },
+          "code_example": "response = self.context.search_and_ask(\n    search_query='',\n    prompt=full_prompt\n)",
+          "success_condition": "response exists and is a string",
+          "success_log": "Response received ({length} characters)"
+        },
+        
+        "step_5_return_response": {
+          "description": "Validate and return the AI response",
+          "validation": "isinstance(response, str)",
+          "error_if_invalid": "RuntimeError: Unexpected response format",
+          "return": "response string"
+        }
+      },
+      
+      "fallback_mode_direct_api": {
+        "description": "When DirectContext fails or is unavailable, use direct REST API calls",
+        "method_name": "_chat_completion_fallback",
+        "trigger_conditions": [
+          "DirectContext initialization failed",
+          "auggie_sdk not installed",
+          "DirectContext.search_and_ask failed after retries"
+        ],
+        
+        "step_1_prepare_request": {
+          "description": "Prepare HTTP request to Augment AI API",
+          "library": "requests",
+          "http_method": "POST",
+          "headers": {
+            "Authorization": "Bearer {access_token}",
+            "Content-Type": "application/json"
+          },
+          "payload": {
+            "model": "config.augment_ai.model (default: sonnet4.5)",
+            "messages": "Original messages list (no conversion needed)",
+            "temperature": "temperature parameter",
+            "max_tokens": "max_tokens or self.max_tokens"
+          }
+        },
+        
+        "step_2_construct_endpoint": {
+          "description": "Build the correct API endpoint URL",
+          "logic": [
+            "If api_url contains '/v1' or ends with '.augmentcode.com': Use tenant URL format",
+            "Tenant format: {api_url}/chat/completions",
+            "Generic format: {api_url}/v1/chat/completions"
+          ],
+          "examples": {
+            "tenant_url": "https://e7.api.augmentcode.com/chat/completions",
+            "generic_url": "https://api.augmentcode.com/v1/chat/completions"
+          }
+        },
+        
+        "step_3_make_request": {
+          "description": "Send HTTP POST request to API",
+          "method": "requests.post()",
+          "parameters": {
+            "url": "endpoint_url",
+            "headers": "Authorization and Content-Type headers",
+            "json": "payload dictionary",
+            "timeout": "timeout in seconds"
+          },
+          "code_example": "response = requests.post(\n    endpoint_url,\n    headers=headers,\n    json=payload,\n    timeout=timeout\n)"
+        },
+        
+        "step_4_handle_response": {
+          "description": "Process API response and extract content",
+          "steps": [
+            "Check HTTP status (response.raise_for_status())",
+            "Parse JSON response",
+            "Extract content from response['choices'][0]['message']['content']",
+            "Log response length",
+            "Return content string"
+          ],
+          "response_format": {
+            "structure": {
+              "choices": [
+                {
+                  "message": {
+                    "role": "assistant",
+                    "content": "AI generated response text"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        
+        "step_5_error_handling": {
+          "timeout_error": {
+            "exception": "requests.exceptions.Timeout",
+            "action": "Raise TimeoutError with message"
+          },
+          "request_error": {
+            "exception": "requests.exceptions.RequestException",
+            "action": "Raise RuntimeError with error details"
+          }
+        }
+      }
+    },
+    
+    "response_processing": {
+      "description": "How AI responses are received and processed",
+      
+      "from_directcontext": {
+        "return_type": "string",
+        "format": "Plain text response from AI",
+        "validation": "Check if response is non-empty string",
+        "logging": "Log response length in characters",
+        "example": "Response received (3524 characters)"
+      },
+      
+      "from_direct_api": {
+        "return_type": "string",
+        "format": "Extracted from JSON response",
+        "path": "response['choices'][0]['message']['content']",
+        "validation": "Check 'choices' array exists and has elements",
+        "error_handling": "RuntimeError if unexpected format"
+      },
+      
+      "common_processing": {
+        "no_parsing_needed": "Response is already plain text string",
+        "direct_return": "Return the string directly to caller",
+        "used_by_methods": [
+          "analyze_test_coverage()",
+          "enhance_test_case()",
+          "generate_test_scenarios()"
+        ]
+      }
+    },
+    
+    "higher_level_methods": {
+      "description": "Methods that use chat_completion for specific tasks",
+      
+      "analyze_test_coverage": {
+        "purpose": "Analyze test coverage gaps",
+        "prompt_building": "PromptManager.build_coverage_analysis_prompt()",
+        "temperature": 0.3,
+        "inputs": {
+          "user_stories": "List of user story dictionaries",
+          "test_cases": "List of test case dictionaries"
+        },
+        "output": {
+          "analysis": "AI response string",
+          "user_stories_count": "Count of user stories",
+          "test_cases_count": "Count of test cases"
+        }
+      },
+      
+      "enhance_test_case": {
+        "purpose": "Enhance test case with AI suggestions",
+        "prompt_building": "PromptManager.build_test_enhancement_prompt()",
+        "temperature": 0.5,
+        "timeout": 300,
+        "inputs": {
+          "test_case": "Test case dictionary",
+          "context": "Optional additional context",
+          "use_chunked": "Boolean for chunked processing"
+        },
+        "output": {
+          "original": "Original test case",
+          "enhanced": "AI-enhanced version"
+        },
+        "chunked_processing": {
+          "enabled_when": "use_chunked=True",
+          "steps": 3,
+          "step_1": "Analyze structure (120s timeout, temp 0.5)",
+          "step_2": "Generate edge cases (120s timeout, temp 0.6)",
+          "step_3": "Create final test case (120s timeout, temp 0.5)",
+          "delays_between_steps": "5 seconds"
+        }
+      },
+      
+      "generate_test_scenarios": {
+        "purpose": "Generate test scenarios for user story",
+        "prompt_building": "PromptManager.build_scenario_generation_prompt()",
+        "temperature": 0.7,
+        "inputs": {
+          "user_story": "User story dictionary",
+          "module": "Optional module name"
+        },
+        "output": "List of scenario strings",
+        "parsing": "Split response by newlines, filter lines starting with digit"
+      }
+    },
+    
+    "connection_lifecycle": {
+      "initialization": {
+        "when": "AugmentAIClient instance is created",
+        "actions": [
+          "Load environment variables",
+          "Create DirectContext",
+          "Initialize index with placeholder file",
+          "Set max_tokens from config"
+        ]
+      },
+      
+      "during_execution": {
+        "persistent_connection": "DirectContext remains open for multiple calls",
+        "no_reconnection_needed": "Same context instance used for all requests",
+        "retry_mechanism": "Built-in retry for transient failures"
+      },
+      
+      "cleanup": {
+        "method": "__del__",
+        "action": "No explicit cleanup needed for DirectContext",
+        "note": "DirectContext doesn't have async resources that need cleanup"
+      }
+    },
+    
+    "authentication_details": {
+      "method": "API Key / Access Token",
+      "token_location": "Environment variable AUGMENT_AI_ACCESS_TOKEN",
+      "token_usage": {
+        "directcontext": "Passed as api_key parameter to DirectContext.create()",
+        "direct_api": "Included in Authorization header as Bearer token"
+      },
+      "tenant_identification": {
+        "tenant_url": "Unique URL per tenant (e.g., https://e7.api.augmentcode.com/)",
+        "purpose": "Routes requests to correct tenant environment"
+      },
+      "no_oauth": "Does not use OAuth flow",
+      "no_acp": "DirectContext bypasses Augment Control Plane (ACP) for headless authentication"
+    },
+    
+    "error_handling_summary": {
+      "sdk_not_installed": {
+        "detection": "ImportError when importing auggie_sdk",
+        "action": "Set AUGGIE_SDK_AVAILABLE=False, use direct API fallback"
+      },
+      
+      "missing_credentials": {
+        "detection": "Empty access_token or tenant_url",
+        "action": "Set self.context=None, log error, use fallback"
+      },
+      
+      "initialization_failure": {
+        "detection": "Exception during DirectContext.create()",
+        "action": "Set self.context=None, log error, use fallback"
+      },
+      
+      "api_call_failure": {
+        "detection": "Exception during search_and_ask",
+        "retry_logic": "Retry up to 3 times with 5s delay",
+        "transient_errors": "Retry if error contains 'timeout', 'connection', etc.",
+        "permanent_errors": "Raise exception after max retries"
+      },
+      
+      "timeout": {
+        "detection": "Request exceeds timeout parameter",
+        "action": "Raise TimeoutError with timeout duration"
+      },
+      
+      "unexpected_response": {
+        "detection": "Response is not a string or has unexpected format",
+        "action": "Raise RuntimeError with format details"
+      }
+    },
+    
+    "logging_details": {
+      "logger_name": "AugmentAIClient",
+      "key_log_points": {
+        "initialization": "Initializing DirectContext for headless authentication...",
+        "success": "✅ DirectContext initialized successfully",
+        "index_init": "Initializing index with placeholder...",
+        "api_call": "Creating chat completion with DirectContext (timeout: Xs)",
+        "prompt_size": "Prompt size: X characters",
+        "retry": "Retry attempt X/3 after 5s delay...",
+        "response": "Response received (X characters)",
+        "error": "DirectContext error (attempt X/3): {error}",
+        "fallback": "⚠️ DirectContext failed. Using direct API fallback."
+      }
+    },
+    
+    "key_advantages": {
+      "directcontext_benefits": [
+        "Headless authentication (no browser required)",
+        "CI/CD compatible (works in GitHub Actions)",
+        "Bypasses Augment Control Plane (ACP)",
+        "Persistent connection for multiple requests",
+        "Built-in retry mechanism",
+        "Automatic error handling"
+      ],
+      
+      "fallback_benefits": [
+        "Works when SDK is unavailable",
+        "Direct HTTP API access",
+        "Standard OpenAI-compatible API format",
+        "Full control over request parameters"
+      ]
+    }
+  }
+}

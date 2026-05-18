@@ -1,14 +1,27 @@
 """
-Supabase Storage service for file upload/download
+Supabase Storage service using REST API (bypasses SSL issues)
 """
-from supabase import create_client, Client
+import requests
 from typing import Optional
-import os
 from datetime import datetime
+import warnings
+
+# Disable SSL warnings
+warnings.filterwarnings('ignore')
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 from ..config import settings
 
-# Initialize Supabase client
-supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
+# Supabase Storage API base URL
+STORAGE_API_URL = f"{settings.SUPABASE_URL}/storage/v1"
+
+# Common headers for all requests
+def get_headers():
+    return {
+        "Authorization": f"Bearer {settings.SUPABASE_SERVICE_KEY}",
+        "apikey": settings.SUPABASE_SERVICE_KEY
+    }
 
 # Storage buckets
 RESUME_BUCKET = "resumes"
@@ -23,31 +36,39 @@ def upload_file(
     content_type: Optional[str] = None
 ) -> dict:
     """
-    Upload file to Supabase Storage
-    
+    Upload file to Supabase Storage using REST API
+
     Args:
         file_content: File content as bytes
         file_name: Name of the file
         bucket_name: Bucket to upload to
         content_type: MIME type of the file
-        
+
     Returns:
         dict with file_path and public_url
     """
     # Create unique file path with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     file_path = f"{timestamp}_{file_name}"
-    
-    # Upload to Supabase
-    response = supabase.storage.from_(bucket_name).upload(
-        path=file_path,
-        file=file_content,
-        file_options={"content-type": content_type} if content_type else {}
+
+    # Upload using REST API
+    headers = get_headers()
+    if content_type:
+        headers["Content-Type"] = content_type
+
+    response = requests.post(
+        f"{STORAGE_API_URL}/object/{bucket_name}/{file_path}",
+        headers=headers,
+        data=file_content,
+        verify=False  # Disable SSL verification
     )
-    
+
+    if response.status_code not in [200, 201]:
+        raise Exception(f"Upload failed: {response.status_code} - {response.text}")
+
     # Get public URL
-    public_url = supabase.storage.from_(bucket_name).get_public_url(file_path)
-    
+    public_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/{bucket_name}/{file_path}"
+
     return {
         "file_path": file_path,
         "public_url": public_url,
@@ -67,33 +88,45 @@ def upload_excel(file_content: bytes, file_name: str, content_type: str) -> dict
 
 def download_file(file_path: str, bucket_name: str = GENERAL_BUCKET) -> bytes:
     """
-    Download file from Supabase Storage
-    
+    Download file from Supabase Storage using REST API
+
     Args:
         file_path: Path to file in bucket
         bucket_name: Bucket name
-        
+
     Returns:
         File content as bytes
     """
-    response = supabase.storage.from_(bucket_name).download(file_path)
-    return response
+    response = requests.get(
+        f"{STORAGE_API_URL}/object/{bucket_name}/{file_path}",
+        headers=get_headers(),
+        verify=False  # Disable SSL verification
+    )
+
+    if response.status_code != 200:
+        raise Exception(f"Download failed: {response.status_code}")
+
+    return response.content
 
 
 def delete_file(file_path: str, bucket_name: str = GENERAL_BUCKET) -> bool:
     """
-    Delete file from Supabase Storage
-    
+    Delete file from Supabase Storage using REST API
+
     Args:
         file_path: Path to file in bucket
         bucket_name: Bucket name
-        
+
     Returns:
         True if successful
     """
     try:
-        supabase.storage.from_(bucket_name).remove([file_path])
-        return True
+        response = requests.delete(
+            f"{STORAGE_API_URL}/object/{bucket_name}/{file_path}",
+            headers=get_headers(),
+            verify=False  # Disable SSL verification
+        )
+        return response.status_code in [200, 204]
     except Exception as e:
         print(f"Error deleting file: {e}")
         return False
@@ -102,15 +135,15 @@ def delete_file(file_path: str, bucket_name: str = GENERAL_BUCKET) -> bool:
 def get_file_url(file_path: str, bucket_name: str = GENERAL_BUCKET) -> str:
     """
     Get public URL for a file
-    
+
     Args:
         file_path: Path to file in bucket
         bucket_name: Bucket name
-        
+
     Returns:
         Public URL string
     """
-    return supabase.storage.from_(bucket_name).get_public_url(file_path)
+    return f"{settings.SUPABASE_URL}/storage/v1/object/public/{bucket_name}/{file_path}"
 
 
 def create_signed_url(
@@ -119,33 +152,46 @@ def create_signed_url(
     expires_in: int = 3600
 ) -> str:
     """
-    Create signed URL for private file access
-    
+    Create signed URL for private file access using REST API
+
     Args:
         file_path: Path to file in bucket
         bucket_name: Bucket name
         expires_in: Expiration time in seconds (default 1 hour)
-        
+
     Returns:
         Signed URL string
     """
-    response = supabase.storage.from_(bucket_name).create_signed_url(
-        file_path,
-        expires_in
+    response = requests.post(
+        f"{STORAGE_API_URL}/object/sign/{bucket_name}/{file_path}",
+        headers=get_headers(),
+        json={"expiresIn": expires_in},
+        verify=False  # Disable SSL verification
     )
-    return response.get("signedURL", "")
+
+    if response.status_code == 200:
+        return response.json().get("signedURL", "")
+    return ""
 
 
 def list_files(bucket_name: str = GENERAL_BUCKET, folder: str = "") -> list:
     """
-    List files in a bucket/folder
-    
+    List files in a bucket/folder using REST API
+
     Args:
         bucket_name: Bucket name
         folder: Folder path (optional)
-        
+
     Returns:
         List of file objects
     """
-    response = supabase.storage.from_(bucket_name).list(folder)
-    return response
+    response = requests.post(
+        f"{STORAGE_API_URL}/object/list/{bucket_name}",
+        headers=get_headers(),
+        json={"prefix": folder} if folder else {},
+        verify=False  # Disable SSL verification
+    )
+
+    if response.status_code == 200:
+        return response.json()
+    return []

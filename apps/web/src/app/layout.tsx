@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 
-const inter = Inter({ subsets: ["latin"] });
+// Using system fonts to avoid Google Fonts timeout issues
+// Montserrat font family is defined in tailwind.config.ts as fallback
 
 export const metadata: Metadata = {
-  title: "Maverick Talent Insights",
-  description: "AI-Powered Training Performance & Competency Tracking Dashboard",
+  title: "Maverick Ascend - AI-Powered Talent Platform",
+  description: "Empowering fresh minds with AI-driven training, assessment, and career growth",
 };
 
 export default function RootLayout({
@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className="font-sans antialiased">
         {children}
         <Toaster position="top-right" />
       </body>

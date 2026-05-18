@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
 import { authAPI } from '@/lib/api';
 import { toast } from 'sonner';
+import Header from '@/components/common/Header';
+import Footer from '@/components/common/Footer';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,7 +27,10 @@ export default function LoginPage() {
       const response = await authAPI.login(email, password);
       const { access_token } = response.data;
 
-      // Get user info
+      // IMPORTANT: Save token to localStorage FIRST before calling getCurrentUser
+      localStorage.setItem('access_token', access_token);
+
+      // Get user info (now the interceptor will add the token)
       const userResponse = await authAPI.getCurrentUser();
       const user = userResponse.data;
 
@@ -33,7 +38,7 @@ export default function LoginPage() {
       login(user, access_token);
 
       toast.success('Login successful!');
-      
+
       // Redirect based on role
       if (user.role === 'super_admin' || user.role === 'hr') {
         router.push('/dashboard');
@@ -41,11 +46,15 @@ export default function LoginPage() {
         router.push('/trainer/dashboard');
       } else if (user.role === 'manager') {
         router.push('/manager/dashboard');
+      } else if (user.role === 'maverick') {
+        router.push('/student/dashboard');  // Fixed: Changed from /maverick/dashboard to /student/dashboard
       } else {
-        router.push('/maverick/dashboard');
+        router.push('/student/dashboard');  // Default for students
       }
     } catch (error: any) {
       console.error('Login error:', error);
+      // Clean up token if login fails
+      localStorage.removeItem('access_token');
       toast.error(error.response?.data?.detail || 'Login failed. Please check your credentials.');
     } finally {
       setIsSubmitting(false);
@@ -54,16 +63,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 px-4">
-      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
-        <div>
-          <h2 className="text-center text-3xl font-bold text-gray-900">
-            Maverick Insights
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to your account
-          </p>
-        </div>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Header />
+
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg border border-gray-200">
+          <div>
+            <h2 className="text-center text-3xl font-black text-blue-900 uppercase tracking-tight">
+              SIGN IN
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-600 font-medium">
+              Access your Mavericks account
+            </p>
+          </div>
         
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <div className="space-y-4">
@@ -106,35 +118,38 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded text-sm font-bold uppercase tracking-wide text-white bg-blue-900 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
 
           <div className="text-sm text-center">
-            <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              Don't have an account? Register
+            <Link href="/mavericks/register" className="font-semibold text-blue-900 hover:text-blue-800">
+              Don't have an account? <span className="underline">Register as Maverick</span>
             </Link>
           </div>
         </form>
 
-        <div className="mt-6 border-t pt-6">
-          <p className="text-xs text-gray-500 text-center mb-2">Test Credentials:</p>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="bg-gray-50 p-2 rounded">
-              <p className="font-semibold">Admin</p>
-              <p className="text-gray-600">admin@maverick.com</p>
-              <p className="text-gray-600">admin123</p>
-            </div>
-            <div className="bg-gray-50 p-2 rounded">
-              <p className="font-semibold">HR</p>
-              <p className="text-gray-600">hr@maverick.com</p>
-              <p className="text-gray-600">hr123</p>
+          <div className="mt-6 border-t pt-6">
+            <p className="text-xs text-gray-500 text-center mb-2">Test Credentials:</p>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="bg-gray-50 p-2 rounded">
+                <p className="font-semibold">Admin</p>
+                <p className="text-gray-600">admin@maverick.com</p>
+                <p className="text-gray-600">admin123</p>
+              </div>
+              <div className="bg-gray-50 p-2 rounded">
+                <p className="font-semibold">HR</p>
+                <p className="text-gray-600">hr@maverick.com</p>
+                <p className="text-gray-600">hr123</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

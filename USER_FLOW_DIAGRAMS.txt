@@ -1,0 +1,1225 @@
+================================================================================
+           MAVERICKS ASCEND PLATFORM - USER FLOW DIAGRAMS
+================================================================================
+                    Complete Feature Map for All User Roles
+================================================================================
+
+TABLE OF CONTENTS:
+1. Maverick Flow Diagram
+2. HR Flow Diagram  
+3. Super Admin Flow Diagram
+4. Trainer Flow Diagram
+5. Manager Flow Diagram
+
+================================================================================
+                        1. MAVERICK FLOW DIAGRAM
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          MAVERICK USER JOURNEY                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+START: New User Registration
+│
+├─> [STEP 1: REGISTRATION & PROFILE CREATION]
+│   │
+│   ├─> Register Account
+│   │   ├─ Enter: Name, Email, Password
+│   │   ├─ Role: Auto-assigned as "MAVERICK"
+│   │   └─ Create Account → Receive Login Credentials
+│   │
+│   ├─> Create Profile
+│   │   ├─ Personal Details:
+│   │   │   └─ Name, Email, Phone Number
+│   │   │
+│   │   ├─ Educational Details:
+│   │   │   ├─ College Name
+│   │   │   ├─ Degree (B.Tech, M.Tech, etc.)
+│   │   │   ├─ Branch (CS, IT, ECE, etc.)
+│   │   │   ├─ Graduation Year
+│   │   │   └─ CGPA
+│   │   │
+│   │   ├─ Social Links:
+│   │   │   ├─ GitHub URL (Optional)
+│   │   │   └─ LinkedIn URL (Optional)
+│   │   │
+│   │   └─ Skills:
+│   │       └─ Manual skill entry (e.g., Python, Java, React)
+│   │
+│   └─> Upload Resume
+│       ├─ Format: PDF or DOC
+│       ├─ AI Processing:
+│       │   ├─ Auto-extract Skills
+│       │   ├─ Generate Profile Summary
+│       │   └─ Validate Education Details
+│       │
+│       └─ Submit for Review → Status: "PENDING"
+│
+├─> [STEP 2: PROFILE REVIEW WAITING]
+│   │
+│   ├─ Status: "UNDER_REVIEW" (HR reviewing)
+│   ├─ Can: View own profile
+│   ├─ Can: Update contact info
+│   └─ Cannot: Access training until approved
+│
+├─> [STEP 3: PROFILE APPROVED - ACCESS GRANTED]
+│   │
+│   └─> Status: "APPROVED" → Assigned to Batch by HR
+│
+├─> [STEP 4: MY DASHBOARD]
+│   │
+│   ├─> View Profile
+│   │   ├─ Personal Information
+│   │   ├─ Educational Details
+│   │   ├─ Skills (Manual + AI Extracted)
+│   │   ├─ AI-Generated Summary
+│   │   └─ Profile Status Badge
+│   │
+│   ├─> Update Profile
+│   │   ├─ Can Update:
+│   │   │   ├─ Phone Number
+│   │   │   ├─ Skills List
+│   │   │   ├─ GitHub URL
+│   │   │   ├─ LinkedIn URL
+│   │   │   └─ Resume (re-upload)
+│   │   │
+│   │   └─ Cannot Update (Contact HR):
+│   │       ├─ Name
+│   │       ├─ Email
+│   │       ├─ College, Degree, Branch
+│   │       ├─ Graduation Year
+│   │       └─ CGPA
+│   │
+│   ├─> My Batch Information
+│   │   ├─ Batch Name
+│   │   ├─ Assigned Pipeline (Training Path)
+│   │   ├─ Batch Start Date
+│   │   ├─ Total Mavericks in Batch
+│   │   └─ Batch Status (Active/Completed)
+│   │
+│   ├─> My Training Progress
+│   │   ├─ Pipeline Jobs (Sequential):
+│   │   │   │
+│   │   │   ├─ Job 1: [Training Session] Status: COMPLETED ✓
+│   │   │   ├─ Job 2: [Assessment] Status: IN_PROGRESS ⏳
+│   │   │   ├─ Job 3: [Project] Status: NOT_STARTED 🔒
+│   │   │   └─ Job 4: [Final Assessment] Status: LOCKED 🔒
+│   │   │
+│   │   ├─ View for Each Job:
+│   │   │   ├─ Job Type (Training/Assessment/Project)
+│   │   │   ├─ Status (Not Started/In Progress/Completed)
+│   │   │   ├─ Duration
+│   │   │   └─ Completion Percentage
+│   │   │
+│   │   └─ Overall Progress Bar
+│   │       └─ "Job 2 of 10 Completed (20%)"
+│   │
+│   ├─> Training Schedule (Calendar View)
+│   │   ├─ Upcoming Training Sessions
+│   │   │   ├─ Session Title
+│   │   │   ├─ Date & Time
+│   │   │   ├─ Duration
+│   │   │   ├─ Trainer Name
+│   │   │   ├─ Location / Meeting Link
+│   │   │   └─ Session Status
+│   │   │
+│   │   └─ Past Sessions (History)
+│   │
+│   ├─> My Assessments
+│   │   ├─ Upcoming Assessments:
+│   │   │   ├─ Assessment Title
+│   │   │   ├─ Scheduled Date
+│   │   │   ├─ Duration (minutes)
+│   │   │   ├─ Max Marks
+│   │   │   └─ Passing Marks
+│   │   │
+│   │   ├─ Assessment Results:
+│   │   │   ├─ Marks Obtained / Max Marks
+│   │   │   ├─ Percentage
+│   │   │   ├─ Status: PASS/FAIL
+│   │   │   ├─ Skills Tested
+│   │   │   └─ Attempt History
+│   │   │
+│   │   └─ Reattempt (if failed):
+│   │       ├─ Request Reattempt
+│   │       ├─ Wait for HR Approval
+│   │       └─ Take Reattempt Assessment
+│   │
+│   ├─> Skill Proficiency Tracking
+│   │   ├─ View Skills by Category:
+│   │   │   ├─ Programming Languages (Python, Java, etc.)
+│   │   │   ├─ Frameworks (React, Django, etc.)
+│   │   │   ├─ Tools (Git, Docker, etc.)
+│   │   │   └─ Soft Skills (Communication, Leadership)
+│   │   │
+│   │   ├─ Proficiency Level per Skill:
+│   │   │   ├─ Beginner (1-3 points)
+│   │   │   ├─ Intermediate (4-6 points)
+│   │   │   ├─ Advanced (7-9 points)
+│   │   │   └─ Expert (10 points)
+│   │   │
+│   │   └─ Skill Growth Chart
+│   │       └─ Visual representation of skill improvement
+│   │
+│   ├─> AI Insights (Personal)
+│   │   ├─ Strengths Identified
+│   │   ├─ Areas for Improvement
+│   │   ├─ Recommended Learning Path
+│   │   └─ Career Suggestions
+│   │
+│   └─> Deployment Status
+│       ├─ Status Options:
+│       │   ├─ "IN_TRAINING" - Currently in training
+│       │   ├─ "AVAILABLE" - Ready for deployment
+│       │   ├─ "DEPLOYED" - Assigned to project
+│       │   └─ "ON_BENCH" - Between projects
+│       │
+│       └─ Deployment Details (if deployed):
+│           ├─ Project Name
+│           ├─ Client/Manager Name
+│           ├─ Deployment Date
+│           └─ Project Duration
+│
+├─> [STEP 5: NOTIFICATIONS]
+│   ├─ Profile Approved/Rejected Notification
+│   ├─ New Training Session Scheduled
+│   ├─ Upcoming Assessment Reminder
+│   ├─ Assessment Results Published
+│   └─ Deployment Assignment Notification
+│
+└─> [STEP 6: SETTINGS & ACCOUNT]
+    ├─ Change Password
+    ├─ Update Contact Information
+    └─ Logout
+
+
+================================================================================
+                          2. HR FLOW DIAGRAM
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                             HR USER JOURNEY                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+START: HR Login
+│
+├─> [HR DASHBOARD - OVERVIEW]
+│   │
+│   ├─> Dashboard Statistics
+│   │   ├─ Total Mavericks Count
+│   │   ├─ Pending Profile Reviews
+│   │   ├─ Active Batches Count
+│   │   ├─ Active Pipelines Count
+│   │   ├─ Mavericks in Training
+│   │   ├─ Mavericks Ready for Deployment
+│   │   └─ Recent Deployment Requests
+│   │
+│   └─> Quick Actions Panel
+│       ├─ Review Pending Profiles
+│       ├─ Create New Batch
+│       ├─ Schedule Training Session
+│       └─ View Deployment Requests
+│
+├─> [MAVERICK MANAGEMENT]
+│   │
+│   ├─> View All Mavericks (List View)
+│   │   ├─ Filters:
+│   │   │   ├─ Profile Status (Pending/Approved/Rejected)
+│   │   │   ├─ Deployment Status
+│   │   │   ├─ Batch Assignment
+│   │   │   └─ Search by Name/Email/College
+│   │   │
+│   │   └─ Columns Display:
+│   │       ├─ Name
+│   │       ├─ Email
+│   │       ├─ College & Degree
+│   │       ├─ CGPA
+│   │       ├─ Profile Status
+│   │       ├─ Deployment Status
+│   │       └─ Actions (View/Edit/Approve/Reject)
+│   │
+│   ├─> Create Maverick Profile (Manual)
+│   │   ├─ Enter all details manually
+│   │   ├─ Upload resume (optional)
+│   │   └─ Auto-approve and assign to batch
+│   │
+│   ├─> Create Maverick with Resume
+│   │   ├─ Upload Resume
+│   │   ├─ AI extracts details
+│   │   ├─ Review and confirm
+│   │   └─ Create profile
+│   │
+│   ├─> Review Pending Profiles
+│   │   ├─ View Profile Details:
+│   │   │   ├─ Personal Info
+│   │   │   ├─ Education Details
+│   │   │   ├─ Skills (Manual + AI Extracted)
+│   │   │   ├─ Resume (Download/View)
+│   │   │   └─ AI-Generated Summary
+│   │   │
+│   │   ├─ Actions:
+│   │   │   ├─ Approve Profile
+│   │   │   ├─ Reject Profile (with reason)
+│   │   │   ├─ Request Changes
+│   │   │   └─ Add Internal Notes
+│   │   │
+│   │   └─ Bulk Actions:
+│   │       ├─ Approve Multiple (Shortlist)
+│   │       ├─ Reject Multiple
+│   │       └─ Export Selected
+│   │
+│   ├─> Update Maverick Profile
+│   │   ├─ Can Update:
+│   │   │   ├─ All Personal Details
+│   │   │   ├─ Educational Information
+│   │   │   ├─ Skills
+│   │   │   ├─ Profile Status
+│   │   │   └─ Deployment Status
+│   │   │
+│   │   └─ Cannot Delete (Audit Trail)
+│   │
+│   └─> Send Notifications
+│       ├─ Bulk Email to Mavericks
+│       ├─ Filter by Status
+│       └─ Custom Message Templates
+│
+├─> [PIPELINE MANAGEMENT]
+│   │
+│   ├─> View All Pipelines
+│   │   ├─ Pipeline List View:
+│   │   │   ├─ Pipeline Name
+│   │   │   ├─ Description
+│   │   │   ├─ Total Jobs Count
+│   │   │   ├─ Duration (days)
+│   │   │   ├─ Status (Draft/Active/Archived)
+│   │   │   └─ Created Date
+│   │   │
+│   │   └─ Filters:
+│   │       ├─ Active Pipelines Only
+│   │       ├─ Archived Pipelines
+│   │       └─ Search by Name
+│   │
+│   ├─> Create New Pipeline
+│   │   ├─ Pipeline Details:
+│   │   │   ├─ Name (e.g., "Full Stack Developer Track")
+│   │   │   ├─ Description
+│   │   │   └─ Target Duration (days)
+│   │   │
+│   │   ├─> Add Pipeline Jobs (Sequential):
+│   │   │   │
+│   │   │   ├─ Job Type Options:
+│   │   │   │   ├─ TRAINING - Learning sessions
+│   │   │   │   ├─ ASSESSMENT - Tests/Exams
+│   │   │   │   ├─ PROJECT - Hands-on projects
+│   │   │   │   └─ REVIEW - Code reviews, presentations
+│   │   │   │
+│   │   │   ├─ For Each Job, Enter:
+│   │   │   │   ├─ Job Name
+│   │   │   │   ├─ Description
+│   │   │   │   ├─ Duration (days/hours)
+│   │   │   │   ├─ Order/Sequence Number
+│   │   │   │   ├─ Prerequisites (optional)
+│   │   │   │   └─ Skills to be Tested/Learned
+│   │   │   │
+│   │   │   └─ AI Suggestion Feature:
+│   │   │       ├─ "Generate Pipeline for Role"
+│   │   │       ├─ Input: Job Role (e.g., React Developer)
+│   │   │       └─ AI creates complete pipeline structure
+│   │   │
+│   │   └─ Save as Draft or Activate
+│   │
+│   ├─> Edit Pipeline
+│   │   ├─ Modify Pipeline Details
+│   │   ├─ Add/Remove/Reorder Jobs
+│   │   ├─ Update Job Details
+│   │   └─ Warning: Cannot modify active pipelines with batches
+│   │
+│   ├─> Clone Pipeline
+│   │   └─ Create copy for customization
+│   │
+│   └─> Archive Pipeline
+│       └─ Soft delete (keep for history)
+│
+├─> [BATCH MANAGEMENT]
+│   │
+│   ├─> View All Batches
+│   │   ├─ Batch List:
+│   │   │   ├─ Batch Name
+│   │   │   ├─ Pipeline Assigned
+│   │   │   ├─ Start Date
+│   │   │   ├─ Expected End Date
+│   │   │   ├─ Maverick Count
+│   │   │   ├─ Status (Active/Completed/Archived)
+│   │   │   └─ Overall Progress %
+│   │   │
+│   │   └─ Filters:
+│   │       ├─ Active Batches
+│   │       ├─ By Pipeline
+│   │       └─ By Start Date Range
+│   │
+│   ├─> Create New Batch
+│   │   ├─ Batch Information:
+│   │   │   ├─ Batch Name
+│   │   │   ├─ Select Pipeline
+│   │   │   ├─ Start Date
+│   │   │   ├─ Expected End Date (auto-calculated)
+│   │   │   └─ Description
+│   │   │
+│   │   ├─ Assign Mavericks:
+│   │   │   ├─ Select from Approved Mavericks
+│   │   │   ├─ Filter by Skills/College/CGPA
+│   │   │   ├─ Bulk Select
+│   │   │   └─ AI Batch Suggestions:
+│   │   │       ├─ Analyze maverick profiles
+│   │   │       ├─ Suggest optimal grouping
+│   │   │       └─ Based on skills/background similarity
+│   │   │
+│   │   └─ Create Batch → Auto-create job progress records
+│   │
+│   ├─> View Batch Details
+│   │   ├─ Batch Overview:
+│   │   │   ├─ Batch Info
+│   │   │   ├─ Pipeline Details
+│   │   │   ├─ Progress Summary
+│   │   │   └─ Timeline Visualization
+│   │   │
+│   │   ├─ Mavericks in Batch:
+│   │   │   ├─ List all mavericks
+│   │   │   ├─ Individual progress
+│   │   │   ├─ Assessment scores
+│   │   │   └─ Remove maverick option
+│   │   │
+│   │   ├─ Job Progress Tracking:
+│   │   │   ├─ View each pipeline job
+│   │   │   ├─ See who completed what
+│   │   │   ├─ Identify lagging students
+│   │   │   └─ Overall batch performance
+│   │   │
+│   │   └─ Batch Analytics:
+│   │       ├─ Average Assessment Scores
+│   │       ├─ Completion Rate
+│   │       ├─ Time to Complete
+│   │       └─ Skill Proficiency Heatmap
+│   │
+│   ├─> Add Mavericks to Existing Batch
+│   │   └─ Select and add new approved mavericks
+│   │
+│   └─> Complete/Archive Batch
+│       └─ Mark as completed when training ends
+│
+├─> [TRAINING SESSION MANAGEMENT]
+│   │
+│   ├─> Schedule Training Session
+│   │   ├─ Session Details:
+│   │   │   ├─ Title
+│   │   │   ├─ Description
+│   │   │   ├─ Select Batch
+│   │   │   ├─ Select Pipeline Job
+│   │   │   ├─ Assign Trainer
+│   │   │   ├─ Date & Time
+│   │   │   ├─ Duration (minutes)
+│   │   │   ├─ Location (Physical/Online)
+│   │   │   └─ Meeting Link (if online)
+│   │   │
+│   │   └─ Create Session → Notify Trainer & Mavericks
+│   │
+│   ├─> View Training Calendar
+│   │   ├─ Month/Week/Day Views
+│   │   ├─ Filter by Batch/Trainer
+│   │   ├─ See all scheduled sessions
+│   │   └─ Session status indicators
+│   │
+│   ├─> Update Training Session
+│   │   ├─ Modify session details
+│   │   ├─ Reschedule
+│   │   └─ Cancel session
+│   │
+│   └─> View Session History
+│       ├─ Completed sessions
+│       ├─ Attendance records
+│       └─ Trainer notes
+│
+├─> [ASSESSMENT MANAGEMENT]
+│   │
+│   ├─> Create Assessment
+│   │   ├─ Assessment Details:
+│   │   │   ├─ Title
+│   │   │   ├─ Description
+│   │   │   ├─ Select Batch
+│   │   │   ├─ Select Pipeline Job (must be ASSESSMENT type)
+│   │   │   ├─ Max Marks
+│   │   │   ├─ Passing Marks
+│   │   │   ├─ Duration (minutes)
+│   │   │   ├─ Scheduled Date
+│   │   │   └─ Skills Being Tested
+│   │   │
+│   │   └─ Create → Notify Mavericks
+│   │
+│   ├─> View All Assessments
+│   │   ├─ Filters:
+│   │   │   ├─ By Batch
+│   │   │   ├─ By Date Range
+│   │   │   └─ Completed/Upcoming
+│   │   │
+│   │   └─ Assessment List:
+│   │       ├─ Title
+│   │       ├─ Batch
+│   │       ├─ Date
+│   │       ├─ Attempts Count
+│   │       └─ Average Score
+│   │
+│   ├─> View Assessment Results
+│   │   ├─ All maverick scores
+│   │   ├─ Pass/Fail status
+│   │   ├─ Score distribution chart
+│   │   └─ Export results (CSV/Excel)
+│   │
+│   └─> Manage Reattempts
+│       ├─ View reattempt requests
+│       ├─ Approve/Reject requests
+│       └─ Set reattempt limits
+│
+├─> [DEPLOYMENT MANAGEMENT]
+│   │
+│   ├─> View Deployment Requests (from Managers)
+│   │   ├─ Request Details:
+│   │   │   ├─ Manager Name
+│   │   │   ├─ Required Skills
+│   │   │   ├─ Project Details
+│   │   │   ├─ Number of Mavericks Needed
+│   │   │   └─ Request Date
+│   │   │
+│   │   └─ Status: Pending/Approved/Rejected
+│   │
+│   ├─> Search Available Mavericks
+│   │   ├─ Filters:
+│   │   │   ├─ Deployment Status: AVAILABLE
+│   │   │   ├─ Required Skills Match
+│   │   │   ├─ Minimum CGPA
+│   │   │   ├─ Batch Completion Status
+│   │   │   └─ Assessment Score Range
+│   │   │
+│   │   └─ AI-Powered Matching:
+│   │       ├─ Best fit candidates for role
+│   │       ├─ Skill match percentage
+│   │       └─ Recommendation score
+│   │
+│   ├─> Deploy Maverick
+│   │   ├─ Select Maverick
+│   │   ├─ Select Manager/Project
+│   │   ├─ Deployment Date
+│   │   ├─ Project Duration
+│   │   └─ Update Status to "DEPLOYED"
+│   │
+│   ├─> View Active Deployments
+│   │   ├─ Maverick Name
+│   │   ├─ Manager/Client
+│   │   ├─ Deployment Date
+│   │   ├─ Project Status
+│   │   └─ Expected End Date
+│   │
+│   └─> Recall Maverick (On Bench)
+│       └─ Change status to "ON_BENCH"
+│
+├─> [ANALYTICS & REPORTS]
+│   │
+│   ├─> Platform Analytics
+│   │   ├─ Total Mavericks by Status
+│   │   ├─ Batch Performance Comparison
+│   │   ├─ Assessment Score Trends
+│   │   ├─ Deployment Rate
+│   │   └─ AI Usage Statistics
+│   │
+│   ├─> Batch Reports
+│   │   ├─ Batch Progress Reports
+│   │   ├─ Individual Maverick Reports
+│   │   ├─ Skill Proficiency Reports
+│   │   └─ Export to PDF/Excel
+│   │
+│   └─> AI Insights Dashboard
+│       ├─ Performance Predictions
+│       ├─ At-Risk Mavericks Identification
+│       ├─ Skill Gap Analysis
+│       └─ Recommended Training Adjustments
+│
+└─> [SETTINGS & ADMIN]
+    ├─ Manage Trainers (Assign/Remove)
+    ├─ Configure Email Templates
+    ├─ System Settings
+    └─ Audit Logs
+
+
+================================================================================
+                      3. SUPER ADMIN FLOW DIAGRAM
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        SUPER ADMIN USER JOURNEY                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+START: Super Admin Login
+│
+├─> [ALL HR FEATURES] ✓
+│   └─ Super Admin has FULL ACCESS to all HR features above
+│
+├─> [ADDITIONAL SUPER ADMIN FEATURES]
+│   │
+│   ├─> USER MANAGEMENT
+│   │   ├─ Create Users (All Roles):
+│   │   │   ├─ Create HR Users
+│   │   │   ├─ Create Trainers
+│   │   │   ├─ Create Managers
+│   │   │   ├─ Create Mavericks
+│   │   │   └─ Create Other Super Admins
+│   │   │
+│   │   ├─ View All Users
+│   │   │   ├─ Filter by Role
+│   │   │   ├─ Filter by Active/Inactive
+│   │   │   └─ Search by Name/Email
+│   │   │
+│   │   ├─ Edit User Details
+│   │   │   ├─ Change Name/Email
+│   │   │   ├─ Change Role
+│   │   │   ├─ Reset Password
+│   │   │   └─ Activate/Deactivate Account
+│   │   │
+│   │   └─ Delete Users (Soft Delete)
+│   │       └─ Maintain audit trail
+│   │
+│   ├─> PLATFORM ANALYTICS (ADVANCED)
+│   │   │
+│   │   ├─> Overall Platform Statistics
+│   │   │   ├─ Total Users by Role
+│   │   │   ├─ Total Mavericks (All Statuses)
+│   │   │   ├─ Active Pipelines Count
+│   │   │   ├─ Total Batches
+│   │   │   ├─ Active Training Sessions
+│   │   │   ├─ Total Assessments Conducted
+│   │   │   ├─ Total Deployments
+│   │   │   └─ Platform Uptime
+│   │   │
+│   │   ├─> Performance Metrics
+│   │   │   ├─ Average Batch Completion Time
+│   │   │   ├─ Average Assessment Scores (Platform-wide)
+│   │   │   ├─ Deployment Success Rate
+│   │   │   ├─ Trainer Efficiency Metrics
+│   │   │   └─ HR Productivity Metrics
+│   │   │
+│   │   ├─> Growth Analytics
+│   │   │   ├─ Monthly User Registration Trends
+│   │   │   ├─ Batch Creation Trends
+│   │   │   ├─ Deployment Rate Over Time
+│   │   │   └─ Skill Demand Analysis
+│   │   │
+│   │   └─> Export Comprehensive Reports
+│   │       ├─ PDF Reports
+│   │       ├─ Excel Dashboards
+│   │       └─ Custom Date Ranges
+│   │
+│   ├─> AI SERVICE MANAGEMENT
+│   │   │
+│   │   ├─> AI Status Dashboard
+│   │   │   ├─ AI Service Status (Online/Offline)
+│   │   │   ├─ Current Model (e.g., GPT-4o-mini)
+│   │   │   ├─ API Health Check
+│   │   │   └─ Feature Toggles:
+│   │   │       ├─ Resume Parsing (ON/OFF)
+│   │   │       ├─ Skill Extraction (ON/OFF)
+│   │   │       └─ Performance Insights (ON/OFF)
+│   │   │
+│   │   ├─> AI Usage Statistics
+│   │   │   ├─ Total API Calls (All Time)
+│   │   │   ├─ Today's Usage
+│   │   │   ├─ Monthly Usage Trends
+│   │   │   ├─ Requests by Feature:
+│   │   │   │   ├─ Resume Parsing Requests
+│   │   │   │   ├─ Skill Extraction Calls
+│   │   │   │   └─ Insight Generation Requests
+│   │   │   │
+│   │   │   └─ Rate Limit Status:
+│   │   │       ├─ Requests This Minute
+│   │   │       ├─ Daily Limit Remaining
+│   │   │       └─ Throttle Warnings
+│   │   │
+│   │   ├─> AI Cost Analytics (CRITICAL)
+│   │   │   ├─ Total Cost (All Time)
+│   │   │   ├─ Monthly Cost Breakdown
+│   │   │   ├─ Cost by Feature:
+│   │   │   │   ├─ Resume Parsing Cost
+│   │   │   │   ├─ Skill Extraction Cost
+│   │   │   │   └─ Insights Generation Cost
+│   │   │   │
+│   │   │   ├─ Token Usage Statistics:
+│   │   │   │   ├─ Total Tokens Used
+│   │   │   │   ├─ Input vs Output Tokens
+│   │   │   │   └─ Average Tokens per Request
+│   │   │   │
+│   │   │   ├─ Cost Per Request Metrics
+│   │   │   └─ Budget Alerts & Warnings
+│   │   │
+│   │   ├─> Configure AI Settings
+│   │   │   ├─ Enable/Disable AI Globally
+│   │   │   ├─ Set Rate Limits:
+│   │   │   │   ├─ Requests Per Minute
+│   │   │   │   └─ Daily Request Limit
+│   │   │   │
+│   │   │   ├─ Configure Cost Controls:
+│   │   │   │   ├─ Daily Budget Limit
+│   │   │   │   └─ Monthly Budget Cap
+│   │   │   │
+│   │   │   └─ AI Model Selection
+│   │   │       └─ Choose GPT Model Version
+│   │   │
+│   │   └─> AI Error Logs
+│   │       ├─ Failed Requests
+│   │       ├─ Error Types
+│   │       ├─ Retry Statistics
+│   │       └─ Troubleshooting Info
+│   │
+│   ├─> AUDIT LOGS & SECURITY
+│   │   │
+│   │   ├─> View Audit Logs
+│   │   │   ├─ All User Actions Logged:
+│   │   │   │   ├─ User Login/Logout
+│   │   │   │   ├─ Profile Changes
+│   │   │   │   ├─ Batch/Pipeline Modifications
+│   │   │   │   ├─ Assessment Creation/Updates
+│   │   │   │   └─ Deployment Actions
+│   │   │   │
+│   │   │   ├─ Filter Audit Logs:
+│   │   │   │   ├─ By User
+│   │   │   │   ├─ By Action Type
+│   │   │   │   ├─ By Date Range
+│   │   │   │   └─ By IP Address
+│   │   │   │
+│   │   │   └─ Export Audit Trail
+│   │   │       └─ Compliance Reports
+│   │   │
+│   │   ├─> Security Monitoring
+│   │   │   ├─ Failed Login Attempts
+│   │   │   ├─ Suspicious Activities
+│   │   │   ├─ Unauthorized Access Attempts
+│   │   │   └─ IP Address Tracking
+│   │   │
+│   │   └─> Compliance Reports
+│   │       ├─ GDPR Compliance
+│   │       ├─ Data Access Reports
+│   │       └─ User Data Exports
+│   │
+│   ├─> SYSTEM CONFIGURATION
+│   │   │
+│   │   ├─> Platform Settings
+│   │   │   ├─ General Settings:
+│   │   │   │   ├─ Platform Name
+│   │   │   │   ├─ Company Logo
+│   │   │   │   ├─ Contact Information
+│   │   │   │   └─ Time Zone
+│   │   │   │
+│   │   │   ├─ Email Configuration:
+│   │   │   │   ├─ SMTP Settings
+│   │   │   │   ├─ Email Templates
+│   │   │   │   └─ Notification Preferences
+│   │   │   │
+│   │   │   └─ Integration Settings:
+│   │   │       ├─ Supabase Configuration
+│   │   │       ├─ OpenAI API Keys
+│   │   │       └─ Third-party Services
+│   │   │
+│   │   ├─> Database Management
+│   │   │   ├─ Database Health Check
+│   │   │   ├─ Backup Status
+│   │   │   ├─ Storage Usage
+│   │   │   └─ Connection Pool Stats
+│   │   │
+│   │   └─> Feature Flags
+│   │       ├─ Enable/Disable Features Globally:
+│   │       │   ├─ Resume Upload
+│   │       │   ├─ AI Features
+│   │       │   ├─ Batch Suggestions
+│   │       │   ├─ Deployment Requests
+│   │       │   └─ Email Notifications
+│   │       │
+│   │       └─ Beta Features Toggle
+│   │
+│   └─> EMERGENCY ACTIONS
+│       ├─ Force Logout All Users
+│       ├─ Disable AI (Cost Emergency)
+│       ├─ Platform Maintenance Mode
+│       └─ Rollback Database (if supported)
+│
+└─> [SUPER ADMIN SETTINGS]
+    ├─ Change Own Password
+    ├─ Two-Factor Authentication
+    └─ Activity Log (Own Actions)
+
+
+================================================================================
+                        4. TRAINER FLOW DIAGRAM
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          TRAINER USER JOURNEY                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+START: Trainer Login
+│
+├─> [TRAINER DASHBOARD]
+│   │
+│   ├─> Dashboard Overview
+│   │   ├─ My Upcoming Training Sessions
+│   │   ├─ Batches I'm Training
+│   │   ├─ Pending Assessments to Grade
+│   │   ├─ Total Mavericks Trained
+│   │   └─ My Training Calendar (This Week)
+│   │
+│   └─> Quick Actions
+│       ├─ View Today's Schedule
+│       ├─ Mark Session as Complete
+│       └─ Enter Assessment Marks
+│
+├─> [MY TRAINING SESSIONS]
+│   │
+│   ├─> View My Scheduled Sessions
+│   │   ├─ Calendar View (Month/Week/Day)
+│   │   ├─ Filter by Batch
+│   │   ├─ Session Details:
+│   │   │   ├─ Session Title
+│   │   │   ├─ Batch Name
+│   │   │   ├─ Date & Time
+│   │   │   ├─ Duration
+│   │   │   ├─ Location/Meeting Link
+│   │   │   ├─ Pipeline Job
+│   │   │   └─ Status (Scheduled/Completed/Cancelled)
+│   │   │
+│   │   └─ Upcoming vs Past Sessions
+│   │
+│   ├─> Mark Session as Complete
+│   │   ├─ Select Completed Session
+│   │   ├─ Enter Completion Details:
+│   │   │   ├─ Attendance Count
+│   │   │   ├─ Actual Duration
+│   │   │   ├─ Completion Notes
+│   │   │   ├─ Topics Covered
+│   │   │   └─ Challenges Faced
+│   │   │
+│   │   └─ Submit → Updates Job Progress for Batch
+│   │
+│   ├─> View Session History
+│   │   ├─ All Past Sessions
+│   │   ├─ Session Feedback
+│   │   └─ Attendance Records
+│   │
+│   └─> Session Materials (Optional Feature)
+│       ├─ Upload Training Materials
+│       ├─ Share Resources with Mavericks
+│       └─ Presentation Slides
+│
+├─> [BATCHES & MAVERICKS]
+│   │
+│   ├─> View My Batches
+│   │   ├─ Batches I'm Assigned To
+│   │   ├─ Batch Details:
+│   │   │   ├─ Batch Name
+│   │   │   ├─ Pipeline
+│   │   │   ├─ Total Mavericks
+│   │   │   ├─ Start Date
+│   │   │   └─ Progress Overview
+│   │   │
+│   │   └─ Batch Performance Summary
+│   │       ├─ Average Assessment Scores
+│   │       └─ Completion Percentage
+│   │
+│   ├─> View Mavericks in My Batches
+│   │   ├─ List All Mavericks:
+│   │   │   ├─ Name
+│   │   │   ├─ Email
+│   │   │   ├─ Skills
+│   │   │   ├─ Overall Progress
+│   │   │   └─ Assessment Scores
+│   │   │
+│   │   ├─ Filter/Search Mavericks
+│   │   └─ View Individual Maverick Profile
+│   │       ├─ Personal Details
+│   │       ├─ Educational Background
+│   │       ├─ Skills & Proficiency
+│   │       ├─ Assessment History
+│   │       └─ Training Progress
+│   │
+│   └─> Maverick Performance Insights
+│       ├─ Top Performers
+│       ├─ At-Risk Mavericks
+│       └─ Skill-wise Analysis
+│
+├─> [ASSESSMENT MANAGEMENT]
+│   │
+│   ├─> Create Assessment
+│   │   ├─ Assessment Details:
+│   │   │   ├─ Title
+│   │   │   ├─ Description
+│   │   │   ├─ Select Batch (my batches only)
+│   │   │   ├─ Select Pipeline Job (ASSESSMENT type)
+│   │   │   ├─ Max Marks
+│   │   │   ├─ Passing Marks
+│   │   │   ├─ Duration (minutes)
+│   │   │   ├─ Scheduled Date
+│   │   │   └─ Skills Being Tested
+│   │   │
+│   │   └─ Create → Notify Mavericks
+│   │
+│   ├─> View My Assessments
+│   │   ├─ All Assessments I Created
+│   │   ├─ Filter by Batch
+│   │   ├─ Filter by Date
+│   │   └─ Assessment Status:
+│   │       ├─ Upcoming
+│   │       ├─ In Progress
+│   │       ├─ Grading Pending
+│   │       └─ Completed
+│   │
+│   ├─> Enter Assessment Marks
+│   │   │
+│   │   ├─ Single Maverick Entry:
+│   │   │   ├─ Select Assessment
+│   │   │   ├─ Select Maverick
+│   │   │   ├─ Enter Marks Obtained
+│   │   │   ├─ Auto-calculate: Pass/Fail
+│   │   │   └─ Submit → Updates Skill Proficiency
+│   │   │
+│   │   ├─ Bulk Marks Entry:
+│   │   │   ├─ Select Assessment
+│   │   │   ├─ Enter marks for all mavericks
+│   │   │   └─ Submit All at Once
+│   │   │
+│   │   └─ Excel Upload (Advanced):
+│   │       ├─ Download Template
+│   │       ├─ Fill Marks in Excel
+│   │       ├─ Upload File
+│   │       └─ System Auto-imports Marks
+│   │
+│   ├─> View Assessment Results
+│   │   ├─ Overall Statistics:
+│   │   │   ├─ Average Score
+│   │   │   ├─ Highest Score
+│   │   │   ├─ Lowest Score
+│   │   │   ├─ Pass Percentage
+│   │   │   └─ Score Distribution Chart
+│   │   │
+│   │   ├─ Individual Results:
+│   │   │   ├─ Maverick-wise Scores
+│   │   │   ├─ Pass/Fail Status
+│   │   │   └─ Ranking
+│   │   │
+│   │   └─ Export Results
+│   │       ├─ CSV Export
+│   │       └─ PDF Report
+│   │
+│   └─> Reattempt Management
+│       ├─ View Reattempt Requests
+│       ├─ Note: Only HR/Admin can approve
+│       └─ Enter marks for reattempts
+│
+├─> [BATCH PROGRESS TRACKING]
+│   │
+│   ├─> View Overall Batch Progress
+│   │   ├─ Pipeline Job Progress:
+│   │   │   ├─ Each job in pipeline
+│   │   │   ├─ Completion status per job
+│   │   │   └─ Maverick-wise progress matrix
+│   │   │
+│   │   └─ Progress Visualization:
+│   │       ├─ Timeline View
+│   │       ├─ Gantt Chart (Optional)
+│   │       └─ Percentage Completion
+│   │
+│   └─> Identify Lagging Mavericks
+│       ├─ See who's falling behind
+│       ├─ Provide additional support
+│       └─ Notify HR if needed
+│
+├─> [TRAINING ANALYTICS (MY DATA)]
+│   │
+│   ├─> My Training Statistics
+│   │   ├─ Total Sessions Conducted
+│   │   ├─ Total Mavericks Trained
+│   │   ├─ Average Batch Performance
+│   │   └─ Training Hours Logged
+│   │
+│   ├─> Assessment Statistics
+│   │   ├─ Total Assessments Created
+│   │   ├─ Average Pass Rate
+│   │   ├─ Most Challenging Topics
+│   │   └─ Skill Proficiency Trends
+│   │
+│   └─> Performance Reports
+│       ├─ My Effectiveness Score
+│       ├─ Batch Comparison (my batches)
+│       └─ Export My Reports
+│
+└─> [SETTINGS]
+    ├─ View My Profile
+    ├─ Change Password
+    ├─ Notification Preferences
+    └─ Logout
+
+
+================================================================================
+                        5. MANAGER FLOW DIAGRAM
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          MANAGER USER JOURNEY                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+START: Manager Login
+│
+├─> [MANAGER DASHBOARD]
+│   │
+│   ├─> Dashboard Overview
+│   │   ├─ My Active Deployments
+│   │   ├─ Pending Deployment Requests
+│   │   ├─ Available Mavericks Count
+│   │   └─ My Team Performance Summary
+│   │
+│   └─> Quick Actions
+│       ├─ Search for Talent
+│       ├─ Request New Deployment
+│       └─ View My Team
+│
+├─> [TALENT SEARCH & DISCOVERY]
+│   │
+│   ├─> Search Available Mavericks
+│   │   │
+│   │   ├─ Search Filters:
+│   │   │   ├─ Deployment Status: "AVAILABLE" only
+│   │   │   ├─ Required Skills (Multi-select):
+│   │   │   │   ├─ Programming Languages
+│   │   │   │   ├─ Frameworks
+│   │   │   │   ├─ Tools
+│   │   │   │   └─ Soft Skills
+│   │   │   │
+│   │   │   ├─ Minimum CGPA
+│   │   │   ├─ College/University
+│   │   │   ├─ Graduation Year Range
+│   │   │   ├─ Minimum Assessment Score
+│   │   │   └─ Batch Completion Status
+│   │   │
+│   │   ├─ Search Results Display:
+│   │   │   ├─ Maverick Name
+│   │   │   ├─ Skills (with proficiency levels)
+│   │   │   ├─ CGPA
+│   │   │   ├─ College & Degree
+│   │   │   ├─ Overall Assessment Average
+│   │   │   ├─ Deployment Status
+│   │   │   └─ Match Score (AI-powered)
+│   │   │
+│   │   └─ AI-Powered Recommendations:
+│   │       ├─ Input: Required skills for project
+│   │       ├─ AI ranks candidates by fit
+│   │       ├─ Shows skill match percentage
+│   │       └─ Recommends top 5 candidates
+│   │
+│   ├─> View Maverick Detailed Profile
+│   │   ├─ Personal Information
+│   │   ├─ Educational Background
+│   │   ├─ Skills with Proficiency Levels:
+│   │   │   └─ Visual proficiency bars
+│   │   │
+│   │   ├─ Assessment History:
+│   │   │   ├─ All assessment scores
+│   │   │   ├─ Average score
+│   │   │   └─ Pass/Fail record
+│   │   │
+│   │   ├─ Training Completed:
+│   │   │   ├─ Batch Name
+│   │   │   ├─ Pipeline Completed
+│   │   │   ├─ Completion Date
+│   │   │   └─ Overall Performance
+│   │   │
+│   │   ├─ AI-Generated Summary:
+│   │   │   ├─ Strengths
+│   │   │   ├─ Best Suited For
+│   │   │   └─ Learning Trajectory
+│   │   │
+│   │   └─ Download Resume
+│   │
+│   └─> Save Candidate (Shortlist)
+│       ├─ Add to My Shortlist
+│       ├─ Add Notes/Comments
+│       └─ Compare Candidates
+│
+├─> [DEPLOYMENT REQUESTS]
+│   │
+│   ├─> Create Deployment Request
+│   │   ├─ Project Details:
+│   │   │   ├─ Project Name
+│   │   │   ├─ Project Description
+│   │   │   ├─ Client Name (Optional)
+│   │   │   ├─ Project Duration
+│   │   │   └─ Start Date (Desired)
+│   │   │
+│   │   ├─ Requirements:
+│   │   │   ├─ Number of Mavericks Needed
+│   │   │   ├─ Required Skills (Multi-select)
+│   │   │   ├─ Minimum CGPA (Optional)
+│   │   │   ├─ Preferred College (Optional)
+│   │   │   └─ Additional Requirements (Text)
+│   │   │
+│   │   ├─ Attach Shortlisted Candidates (Optional):
+│   │   │   └─ Select from my shortlist
+│   │   │
+│   │   └─ Submit Request → Goes to HR for Approval
+│   │
+│   ├─> View My Deployment Requests
+│   │   ├─ Request Status:
+│   │   │   ├─ PENDING - Awaiting HR review
+│   │   │   ├─ APPROVED - HR approved, assignment in progress
+│   │   │   ├─ REJECTED - HR rejected (with reason)
+│   │   │   └─ FULFILLED - Mavericks deployed
+│   │   │
+│   │   ├─ Request Details:
+│   │   │   ├─ Project Info
+│   │   │   ├─ Requirements
+│   │   │   ├─ Submitted Date
+│   │   │   ├─ HR Comments
+│   │   │   └─ Assigned Mavericks (if fulfilled)
+│   │   │
+│   │   └─ Actions:
+│   │       ├─ Edit Request (if pending)
+│   │       ├─ Cancel Request
+│   │       └─ View Assigned Team
+│   │
+│   └─> Request History
+│       ├─ All Past Requests
+│       ├─ Fulfillment Rate
+│       └─ Average Processing Time
+│
+├─> [MY DEPLOYED TEAM]
+│   │
+│   ├─> View All My Deployments
+│   │   ├─ Active Deployments:
+│   │   │   ├─ Maverick Name
+│   │   │   ├─ Project Name
+│   │   │   ├─ Deployment Date
+│   │   │   ├─ Expected End Date
+│   │   │   ├─ Current Status
+│   │   │   └─ Project Progress
+│   │   │
+│   │   └─ Past Deployments:
+│   │       └─ Deployment history
+│   │
+│   ├─> View Team Member Profile
+│   │   ├─ Full Maverick Profile
+│   │   ├─ Skills & Proficiency
+│   │   ├─ Assessment History
+│   │   └─ Contact Information
+│   │
+│   ├─> Team Performance Dashboard
+│   │   ├─ Team Size
+│   │   ├─ Average Skill Levels
+│   │   ├─ Team Composition (Skill-wise)
+│   │   └─ Performance Metrics (Optional)
+│   │
+│   └─> Release from Project (Return to Bench)
+│       ├─ Mark Deployment as Complete
+│       ├─ Provide Feedback (Optional)
+│       └─ Maverick status → "ON_BENCH"
+│
+├─> [ANALYTICS & INSIGHTS]
+│   │
+│   ├─> Deployment Analytics
+│   │   ├─ Total Deployments (All Time)
+│   │   ├─ Active Team Members
+│   │   ├─ Deployment Success Rate
+│   │   └─ Average Project Duration
+│   │
+│   ├─> Skill Demand Analysis
+│   │   ├─ Most Requested Skills
+│   │   ├─ Skill Availability vs Demand
+│   │   └─ Skill Gap Identification
+│   │
+│   └─> Reports
+│       ├─ My Deployment Reports
+│       ├─ Team Performance Reports
+│       └─ Export to PDF/Excel
+│
+└─> [SETTINGS]
+    ├─ My Profile
+    ├─ Change Password
+    ├─ Notification Preferences
+    │   ├─ New Maverick Available
+    │   ├─ Request Status Updates
+    │   └─ Email Notifications
+    │
+    └─ Logout
+
+
+================================================================================
+                            END OF FLOW DIAGRAMS
+================================================================================
+
+LEGEND:
+├─>  Main Flow Step
+│    Continuation
+└─>  Final Step / Option
+
+✓    Feature Available
+⏳   In Progress
+🔒   Locked/Restricted
+✅   Completed
+❌   Rejected
+
+================================================================================
+                         PLATFORM KEY FEATURES SUMMARY
+================================================================================
+
+1. REGISTRATION & ONBOARDING
+   - Self-registration for Mavericks
+   - AI-powered resume parsing
+   - Multi-step profile creation
+   - HR review and approval workflow
+
+2. TRAINING MANAGEMENT
+   - Pipeline-based training paths
+   - Batch creation and management
+   - Training session scheduling
+   - Calendar-based scheduling
+
+3. ASSESSMENT SYSTEM
+   - Assessment creation and scheduling
+   - Multiple entry methods (Single/Bulk/Excel)
+   - Automatic skill proficiency tracking
+   - Reattempt management system
+
+4. SKILL PROFICIENCY TRACKING
+   - AI-powered skill extraction
+   - Skill proficiency levels (Beginner→Expert)
+   - Skill growth visualization
+   - Competency matrix
+
+5. DEPLOYMENT & TALENT MATCHING
+   - AI-powered candidate recommendations
+   - Skill-based search and filtering
+   - Deployment request workflow
+   - Team management for managers
+
+6. AI INTEGRATION
+   - Resume parsing and skill extraction
+   - Performance insights and predictions
+   - Batch suggestions
+   - Cost tracking and controls
+
+7. ANALYTICS & REPORTING
+   - Role-specific dashboards
+   - Performance metrics
+   - Comprehensive reports (PDF/Excel)
+   - Audit trail and compliance
+
+8. ADMIN & SECURITY
+   - User management (all roles)
+   - Audit logs
+   - AI cost management
+   - Platform configuration
+
+================================================================================
+                              END OF DOCUMENT
+================================================================================

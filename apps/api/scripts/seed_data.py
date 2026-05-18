@@ -83,12 +83,17 @@ def seed_database():
         for i, user in enumerate(maverick_users, 1):
             maverick = Maverick(
                 user_id=user.id,
+                name=user.name,
+                email=user.email,
                 college=f"University {i}",
                 degree="B.Tech Computer Science",
+                branch="Computer Science",
                 graduation_year=2024,
+                cgpa=8.5,
                 phone=f"+91-98765{i:05d}",
                 skills=["Python", "JavaScript", "SQL", "React"],
-                profile_status=ProfileStatus.SHORTLISTED
+                profile_status=ProfileStatus.PENDING,  # Use the enum properly
+                deployment_status=DeploymentStatus.AVAILABLE  # Use the enum properly
             )
             mavericks.append(maverick)
             db.add(maverick)
@@ -187,7 +192,7 @@ def seed_database():
         # Assign mavericks to batch
         for maverick in mavericks[:3]:  # Assign first 3 mavericks
             maverick.current_batch_id = batch.id
-            maverick.profile_status = ProfileStatus.ASSIGNED
+            maverick.profile_status = ProfileStatus.APPROVED  # Use the enum properly
 
         db.commit()
 

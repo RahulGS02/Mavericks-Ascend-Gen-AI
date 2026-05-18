@@ -1,78 +1,94 @@
 """
-Setup Supabase Storage buckets
+Setup Supabase Storage buckets using REST API
 Run with: python scripts/setup_storage.py
 """
 import sys
 from pathlib import Path
+import requests
+import warnings
+
+# Disable SSL warnings for development
+warnings.filterwarnings('ignore')
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from supabase import create_client
 from app.config import settings
 
 def setup_storage_buckets():
-    """Create required storage buckets in Supabase"""
-    
+    """Create required storage buckets in Supabase using REST API"""
+
     print("🗄️  Setting up Supabase Storage buckets...")
-    
+    print(f"📡 Connecting to: {settings.SUPABASE_URL}\n")
+
+    # Supabase Storage API endpoints
+    base_url = f"{settings.SUPABASE_URL}/storage/v1"
+    headers = {
+        "Authorization": f"Bearer {settings.SUPABASE_SERVICE_KEY}",
+        "apikey": settings.SUPABASE_SERVICE_KEY,
+        "Content-Type": "application/json"
+    }
+
     try:
-        # Initialize Supabase client
-        supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
         
         buckets_to_create = [
             {
+                "id": "resumes",
                 "name": "resumes",
                 "public": True,
                 "file_size_limit": 5242880,  # 5MB
-                "allowed_mime_types": [
-                    "application/pdf",
-                    "application/msword",
-                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                ]
             },
             {
+                "id": "excel-files",
                 "name": "excel-files",
                 "public": True,
                 "file_size_limit": 10485760,  # 10MB
-                "allowed_mime_types": [
-                    "application/vnd.ms-excel",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    "text/csv"
-                ]
             },
             {
+                "id": "uploads",
                 "name": "uploads",
                 "public": True,
                 "file_size_limit": 10485760,  # 10MB
-                "allowed_mime_types": None  # All types
             }
         ]
-        
+
         # Get existing buckets
-        existing_buckets = supabase.storage.list_buckets()
-        existing_bucket_names = [b.name for b in existing_buckets]
-        
-        print(f"📋 Found {len(existing_buckets)} existing buckets")
-        
+        response = requests.get(
+            f"{base_url}/bucket",
+            headers=headers,
+            verify=False  # Disable SSL verification
+        )
+
+        if response.status_code == 200:
+            existing_buckets = response.json()
+            existing_bucket_names = [b.get('name') or b.get('id') for b in existing_buckets]
+            print(f"📋 Found {len(existing_buckets)} existing buckets")
+        else:
+            print(f"⚠️  Could not list buckets: {response.status_code}")
+            existing_bucket_names = []
+
         # Create buckets
         for bucket_config in buckets_to_create:
-            bucket_name = bucket_config["name"]
-            
-            if bucket_name in existing_bucket_names:
-                print(f"   ⏭️  Bucket '{bucket_name}' already exists")
+            bucket_id = bucket_config["id"]
+
+            if bucket_id in existing_bucket_names:
+                print(f"   ⏭️  Bucket '{bucket_id}' already exists")
             else:
                 try:
-                    supabase.storage.create_bucket(
-                        bucket_name,
-                        options={
-                            "public": bucket_config["public"],
-                            "file_size_limit": bucket_config["file_size_limit"],
-                            "allowed_mime_types": bucket_config["allowed_mime_types"]
-                        }
+                    response = requests.post(
+                        f"{base_url}/bucket",
+                        headers=headers,
+                        json=bucket_config,
+                        verify=False  # Disable SSL verification
                     )
-                    print(f"   ✓ Created bucket: {bucket_name}")
+
+                    if response.status_code in [200, 201]:
+                        print(f"   ✓ Created bucket: {bucket_id}")
+                    else:
+                        print(f"   ⚠️  Could not create '{bucket_id}': {response.status_code} - {response.text}")
                 except Exception as e:
-                    print(f"   ⚠️  Error creating bucket '{bucket_name}': {e}")
+                    print(f"   ⚠️  Error creating bucket '{bucket_id}': {e}")
         
         print("\n✅ Storage setup complete!")
         print("\n📦 Available buckets:")

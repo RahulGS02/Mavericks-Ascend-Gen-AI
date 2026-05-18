@@ -1,13 +1,15 @@
 "use client";
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore, UserRole } from '@/store/authStore';
-import { 
-  Home, Users, BookOpen, Briefcase, BarChart3, Settings, 
-  LogOut, Menu, X, GraduationCap, Calendar, FileText 
+import {
+  Home, Users, BookOpen, Briefcase, BarChart3, Settings,
+  LogOut, Menu, X, GraduationCap, Calendar, FileText, UserPlus,
+  TrendingUp, Award, Clock, Target
 } from 'lucide-react';
+import NotificationBell from './NotificationBell';
 
 interface NavItem {
   label: string;
@@ -17,17 +19,24 @@ interface NavItem {
 }
 
 const navigationItems: NavItem[] = [
+  // HR & Admin Navigation
   {
     label: 'Dashboard',
     href: '/dashboard',
     icon: <Home className="w-5 h-5" />,
-    roles: ['super_admin', 'hr', 'trainer', 'manager'],
+    roles: ['super_admin', 'hr'],
+  },
+  {
+    label: 'Pending Profiles',
+    href: '/hr/pending',
+    icon: <Users className="w-5 h-5" />,
+    roles: ['super_admin', 'hr'],
   },
   {
     label: 'Mavericks',
     href: '/mavericks',
     icon: <Users className="w-5 h-5" />,
-    roles: ['super_admin', 'hr', 'trainer'],
+    roles: ['super_admin', 'hr'],
   },
   {
     label: 'Pipelines',
@@ -39,13 +48,19 @@ const navigationItems: NavItem[] = [
     label: 'Batches',
     href: '/batches',
     icon: <GraduationCap className="w-5 h-5" />,
-    roles: ['super_admin', 'hr', 'trainer'],
+    roles: ['super_admin', 'hr'],
+  },
+  {
+    label: 'Trainers',
+    href: '/trainers',
+    icon: <UserPlus className="w-5 h-5" />,
+    roles: ['super_admin', 'hr'],
   },
   {
     label: 'Assessments',
     href: '/assessments',
     icon: <FileText className="w-5 h-5" />,
-    roles: ['super_admin', 'hr', 'trainer'],
+    roles: ['super_admin', 'hr'],
   },
   {
     label: 'Deployments',
@@ -59,6 +74,98 @@ const navigationItems: NavItem[] = [
     icon: <BarChart3 className="w-5 h-5" />,
     roles: ['super_admin', 'hr'],
   },
+
+  // Trainer Navigation
+  {
+    label: 'Dashboard',
+    href: '/trainer/dashboard',
+    icon: <Home className="w-5 h-5" />,
+    roles: ['trainer'],
+  },
+  {
+    label: 'My Batches',
+    href: '/trainer/batches',
+    icon: <GraduationCap className="w-5 h-5" />,
+    roles: ['trainer'],
+  },
+  {
+    label: 'Assessments',
+    href: '/trainer/assessments',
+    icon: <FileText className="w-5 h-5" />,
+    roles: ['trainer'],
+  },
+
+  // Manager Navigation
+  {
+    label: 'Dashboard',
+    href: '/manager/dashboard',
+    icon: <Home className="w-5 h-5" />,
+    roles: ['manager'],
+  },
+  {
+    label: 'Search Talent',
+    href: '/manager/search',
+    icon: <Users className="w-5 h-5" />,
+    roles: ['manager'],
+  },
+  {
+    label: 'Deployment Requests',
+    href: '/deployments/requests',
+    icon: <Briefcase className="w-5 h-5" />,
+    roles: ['manager'],
+  },
+  {
+    label: 'My Team',
+    href: '/manager/team',
+    icon: <Users className="w-5 h-5" />,
+    roles: ['manager'],
+  },
+  {
+    label: 'Analytics',
+    href: '/trainer/analytics',
+    icon: <BarChart3 className="w-5 h-5" />,
+    roles: ['trainer'],
+  },
+
+  // Student (Maverick) Navigation
+  {
+    label: 'My Dashboard',
+    href: '/student/dashboard',
+    icon: <Home className="w-5 h-5" />,
+    roles: ['maverick'],
+  },
+  {
+    label: 'My Progress',
+    href: '/student/progress',
+    icon: <TrendingUp className="w-5 h-5" />,
+    roles: ['maverick'],
+  },
+  {
+    label: 'My Batch',
+    href: '/student/batch',
+    icon: <Users className="w-5 h-5" />,
+    roles: ['maverick'],
+  },
+  {
+    label: 'My Assessments',
+    href: '/student/assessments',
+    icon: <Award className="w-5 h-5" />,
+    roles: ['maverick'],
+  },
+  {
+    label: 'Training Schedule',
+    href: '/student/schedule',
+    icon: <Calendar className="w-5 h-5" />,
+    roles: ['maverick'],
+  },
+  {
+    label: 'My Profile',
+    href: '/student/profile',
+    icon: <Target className="w-5 h-5" />,
+    roles: ['maverick'],
+  },
+
+  // Common
   {
     label: 'Settings',
     href: '/settings',
@@ -75,16 +182,29 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  if (!user) {
-    router.push('/login');
-    return null;
-  }
+  // Ensure we're on the client before accessing router
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Handle auth redirect on client side only
+  useEffect(() => {
+    if (isClient && !user) {
+      router.push('/login');
+    }
+  }, [isClient, user, router]);
 
   const handleLogout = () => {
     logout();
     router.push('/login');
   };
+
+  // Show nothing during SSR or while checking auth
+  if (!isClient || !user) {
+    return null;
+  }
 
   // Filter navigation based on user role
   const allowedNavItems = navigationItems.filter((item) =>
@@ -102,8 +222,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-6 border-b">
-            <h1 className="text-xl font-bold text-blue-600">
-              Maverick Insights
+            <h1 className="text-xl font-bold text-blue-900">
+              Maverick Ascend
             </h1>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -168,8 +288,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           >
             <Menu className="w-6 h-6" />
           </button>
-          
+
           <div className="flex items-center space-x-4">
+            <NotificationBell />
             <span className="text-sm text-gray-600">
               Welcome back, <span className="font-medium">{user.name}</span>
             </span>

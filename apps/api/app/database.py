@@ -3,12 +3,18 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from .config import settings
 
-# Create database engine
+# Create database engine with Supabase-optimized settings
 engine = create_engine(
     settings.DATABASE_URL,
-    pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
+    pool_pre_ping=True,  # Verify connections before using
+    pool_size=5,  # Reduced for Supabase pooler limits
+    max_overflow=10,  # Reduced overflow
+    pool_recycle=300,  # Recycle connections every 5 minutes
+    pool_timeout=30,  # Connection timeout
+    connect_args={
+        "connect_timeout": 10,
+        "options": "-c statement_timeout=30000"  # 30 second query timeout
+    },
     echo=settings.ENVIRONMENT == "development"
 )
 
@@ -28,5 +34,8 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
+    except Exception as e:
+        db.rollback()
+        raise
     finally:
         db.close()
