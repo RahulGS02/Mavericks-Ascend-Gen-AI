@@ -21,9 +21,9 @@ pydantic==1.10.13
 python-dotenv==1.0.0
 email-validator==2.1.0.post1
 
-# Excel Processing
-pandas==2.1.4
-openpyxl==3.1.2
+# Excel Processing - Use latest (has Python 3.14 wheels)
+pandas
+openpyxl
 
 # Document Processing
 PyPDF2==3.0.1
