@@ -4,6 +4,15 @@ from sqlalchemy.orm import sessionmaker
 from .config import settings
 
 # Create database engine with Supabase-optimized settings
+# Force IPv4 to avoid Azure Free Tier IPv6 limitation
+import socket
+
+# Monkey patch to force IPv4
+original_getaddrinfo = socket.getaddrinfo
+def getaddrinfo_ipv4_only(host, port, family=0, type=0, proto=0, flags=0):
+    return original_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
+socket.getaddrinfo = getaddrinfo_ipv4_only
+
 engine = create_engine(
     settings.DATABASE_URL,
     pool_pre_ping=True,  # Verify connections before using
