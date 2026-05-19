@@ -1,3 +1,16 @@
+# ============================================================
+# CRITICAL: IPv4 PATCH MUST BE FIRST - Before ANY other imports
+# Azure Free Tier doesn't support outbound IPv6 connections
+# This forces Python's socket library to use IPv4 only
+# ============================================================
+import socket
+original_getaddrinfo = socket.getaddrinfo
+def getaddrinfo_ipv4_only(host, port, family=0, type=0, proto=0, flags=0):
+    return original_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
+socket.getaddrinfo = getaddrinfo_ipv4_only
+print("✅ IPv4-only mode enabled (Azure compatibility)")
+# ============================================================
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
