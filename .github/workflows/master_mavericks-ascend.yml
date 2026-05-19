@@ -65,3 +65,4 @@ jobs:
           app-name: 'mavericks-ascend'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_158727FB21194A5F9A41A682E95EE385 }}
+          startup-command: 'gunicorn app.main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000'

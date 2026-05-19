@@ -6,10 +6,18 @@ import io
 import logging
 from typing import Optional
 import PyPDF2
-import pdfplumber
 from docx import Document
 
 logger = logging.getLogger(__name__)
+
+# Try to import pdfplumber (optional - better PDF parsing)
+try:
+    import pdfplumber
+    PDFPLUMBER_AVAILABLE = True
+    logger.info("✅ pdfplumber available - enhanced PDF parsing enabled")
+except ImportError:
+    PDFPLUMBER_AVAILABLE = False
+    logger.warning("⚠️ pdfplumber not available - using PyPDF2 only")
 
 # OCR imports (optional - for image-based PDFs)
 import os
@@ -61,20 +69,21 @@ class DocumentParser:
         Extract text from PDF file using multiple methods for better accuracy
         """
         text = ""
-        
-        # Method 1: Try pdfplumber first (better for complex PDFs)
-        try:
-            with pdfplumber.open(io.BytesIO(file_content)) as pdf:
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text += page_text + "\n"
-            
-            if text.strip():
-                logger.info("Extracted text using pdfplumber")
-                return text.strip()
-        except Exception as e:
-            logger.warning(f"pdfplumber extraction failed: {e}")
+
+        # Method 1: Try pdfplumber first (better for complex PDFs) - if available
+        if PDFPLUMBER_AVAILABLE:
+            try:
+                with pdfplumber.open(io.BytesIO(file_content)) as pdf:
+                    for page in pdf.pages:
+                        page_text = page.extract_text()
+                        if page_text:
+                            text += page_text + "\n"
+
+                if text.strip():
+                    logger.info("Extracted text using pdfplumber")
+                    return text.strip()
+            except Exception as e:
+                logger.warning(f"pdfplumber extraction failed: {e}")
         
         # Method 2: Fallback to PyPDF2
         try:
