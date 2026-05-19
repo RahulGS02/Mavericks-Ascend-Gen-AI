@@ -1,4 +1,4 @@
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from typing import List, Optional
 
 
@@ -71,7 +71,7 @@ class Settings(BaseSettings):
             return False
         return self.AI_ENABLED and self.AI_API_KEY is not None
 
-    class Config:
+    class ConfigDict:
         env_file = ".env"
         case_sensitive = True
 

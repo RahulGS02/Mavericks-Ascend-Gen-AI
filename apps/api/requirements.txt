@@ -1,10 +1,10 @@
-# RENDER DEPLOYMENT - PYDANTIC V1 FOR PYTHON 3.14 COMPATIBILITY
-# Pure Python packages only - NO RUST COMPILATION
+# AZURE DEPLOYMENT - PYTHON 3.11 COMPATIBLE
+# Full modern stack with Pydantic v2
 
-# FastAPI - Use 0.85.0 (Stable with Pydantic v1, no v2 prep code)
-fastapi==0.85.0
-uvicorn[standard]==0.19.0
-python-multipart==0.0.5
+# FastAPI - Modern version with Pydantic v2 support
+fastapi==0.115.4
+uvicorn[standard]==0.27.1
+python-multipart==0.0.6
 
 # Database
 sqlalchemy==2.0.23
@@ -16,8 +16,9 @@ python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 bcrypt==4.1.1
 
-# Settings - PYDANTIC V1 (Pure Python, no Rust)
-pydantic==1.10.13
+# Settings - PYDANTIC V2 (Modern, faster)
+pydantic==2.8.2
+pydantic-settings==2.3.4
 python-dotenv==1.0.0
 email-validator==2.1.0.post1
 
@@ -32,8 +33,8 @@ python-docx==1.1.0
 # Utilities
 python-dateutil==2.8.2
 
-# File Storage - Pin to version 2.10.0 (compatible with older FastAPI)
-supabase==2.10.0
+# File Storage - Latest version
+supabase
 
 # OCR - DISABLED (causes Rust compilation errors on Python 3.14)
 # pytesseract
