@@ -1,14 +1,22 @@
 # ============================================================
-# CRITICAL: IPv4 PATCH MUST BE FIRST - Before ANY other imports
-# Azure Free Tier doesn't support outbound IPv6 connections
-# This forces Python's socket library to use IPv4 only
+# CRITICAL: IPv4 PATCH MUST BE FIRST - Before ANY other imports!
+# Azure Free Tier doesn't support outbound IPv6 connections.
+# This MUST be imported before fastapi, sqlalchemy, or any networking code.
 # ============================================================
+import sys
 import socket
-original_getaddrinfo = socket.getaddrinfo
-def getaddrinfo_ipv4_only(host, port, family=0, type=0, proto=0, flags=0):
-    return original_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
-socket.getaddrinfo = getaddrinfo_ipv4_only
-print("✅ IPv4-only mode enabled (Azure compatibility)")
+
+# Store original getaddrinfo
+_original_getaddrinfo = socket.getaddrinfo
+
+def _ipv4_only_getaddrinfo(host, port, family=0, socktype=0, proto=0, flags=0):
+    """Force IPv4 for Azure Free Tier compatibility"""
+    return _original_getaddrinfo(host, port, socket.AF_INET, socktype, proto, flags)
+
+# Apply patch BEFORE any other imports
+socket.getaddrinfo = _ipv4_only_getaddrinfo
+sys.stdout.write("🔧 IPv4-only patch applied for Azure compatibility\n")
+sys.stdout.flush()
 # ============================================================
 
 from fastapi import FastAPI
