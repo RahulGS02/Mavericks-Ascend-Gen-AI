@@ -7,6 +7,10 @@ import os
 # Add project root to path
 sys.path.insert(0, os.path.abspath('.'))
 
+# CRITICAL: Load .env file BEFORE importing any app modules
+from dotenv import load_dotenv
+load_dotenv()  # This loads the .env file
+
 print("🧪 Testing Auggie SDK DirectContext")
 print("="*70)
 

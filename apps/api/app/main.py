@@ -29,7 +29,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Import routers
-from app.api.v1 import auth, files, mavericks, hr_workflow, hr_dashboard, maverick_dashboard, trainer_dashboard, trainer_analytics, pipelines, batches, batch_schedule, job_progress, training, assessments, reattempts, deployments, ai_status, resume_parser, batch_suggestions, skill_proficiency, trainer_feedback_api, analytics, trainers, manager_dashboard, manager_search, requirement_workflow, notifications
+from app.api.v1 import auth, files, mavericks, hr_workflow, hr_dashboard, maverick_dashboard, trainer_dashboard, trainer_analytics, pipelines, batches, batch_schedule, job_progress, training, assessments, reattempts, deployments, ai_status, resume_parser, batch_suggestions, skill_proficiency, trainer_feedback_api, analytics, trainers, manager_dashboard, manager_search, requirement_workflow, notifications, admin_users, admin_audit, admin_dashboard, admin_settings, admin_analytics
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -104,6 +104,13 @@ app.include_router(manager_dashboard.router, prefix="/api/v1", tags=["Manager Da
 app.include_router(manager_search.router, prefix="/api/v1", tags=["Manager Search"])
 app.include_router(requirement_workflow.router, prefix="/api/v1/workflow", tags=["Requirement Workflow"])
 app.include_router(notifications.router, prefix="/api/v1/notifications", tags=["Notifications"])
+
+# Super Admin routers
+app.include_router(admin_users.router, prefix="/api/v1", tags=["Super Admin"])
+app.include_router(admin_audit.router, prefix="/api/v1", tags=["Super Admin"])
+app.include_router(admin_dashboard.router, prefix="/api/v1", tags=["Super Admin"])
+app.include_router(admin_settings.router, prefix="/api/v1", tags=["Super Admin"])
+app.include_router(admin_analytics.router, prefix="/api/v1", tags=["Super Admin"])
 
 if __name__ == "__main__":
     import uvicorn

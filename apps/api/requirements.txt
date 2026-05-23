@@ -47,13 +47,14 @@ supabase
 # Pillow
 # pdfplumber
 
-# AI/ML - DISABLED (optional)
-# openai
+# AI/ML - Multi-Provider Support
+# Anthropic Claude API (Recommended for Production & Local)
+anthropic==0.25.2
 
-# Auggie SDK - DISABLED (optional)
-# auggie-sdk
+# Auggie SDK (Alternative provider)
+auggie-sdk
 
-# Testing - NOT NEEDED in production
+# Testing - Optional (for development)
 # pytest
 # pytest-asyncio
-# httpx
+httpx  # Required for test scripts and Anthropic client

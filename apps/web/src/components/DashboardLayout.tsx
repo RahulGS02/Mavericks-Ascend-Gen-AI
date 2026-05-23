@@ -7,7 +7,7 @@ import { useAuthStore, UserRole } from '@/store/authStore';
 import {
   Home, Users, BookOpen, Briefcase, BarChart3, Settings,
   LogOut, Menu, X, GraduationCap, Calendar, FileText, UserPlus,
-  TrendingUp, Award, Clock, Target
+  TrendingUp, Award, Clock, Target, Shield, DollarSign
 } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 
@@ -19,12 +19,38 @@ interface NavItem {
 }
 
 const navigationItems: NavItem[] = [
+  // Super Admin Exclusive Navigation
+  {
+    label: 'Admin Dashboard',
+    href: '/admin/dashboard',
+    icon: <Shield className="w-5 h-5" />,
+    roles: ['super_admin'],
+  },
+  {
+    label: 'User Management',
+    href: '/admin/users',
+    icon: <Users className="w-5 h-5" />,
+    roles: ['super_admin'],
+  },
+  {
+    label: 'Organization Analytics',
+    href: '/admin/analytics',
+    icon: <BarChart3 className="w-5 h-5" />,
+    roles: ['super_admin'],
+  },
+  {
+    label: 'AI Cost Analytics',
+    href: '/admin/ai-analytics',
+    icon: <DollarSign className="w-5 h-5" />,
+    roles: ['super_admin'],
+  },
+
   // HR & Admin Navigation
   {
-    label: 'Dashboard',
+    label: 'HR Dashboard',
     href: '/dashboard',
     icon: <Home className="w-5 h-5" />,
-    roles: ['super_admin', 'hr'],
+    roles: ['hr'], // Removed super_admin - they have their own dashboard
   },
   {
     label: 'Pending Profiles',
@@ -72,7 +98,7 @@ const navigationItems: NavItem[] = [
     label: 'Analytics',
     href: '/analytics',
     icon: <BarChart3 className="w-5 h-5" />,
-    roles: ['super_admin', 'hr'],
+    roles: ['hr'],  // Removed super_admin - they have Organization Analytics
   },
 
   // Trainer Navigation

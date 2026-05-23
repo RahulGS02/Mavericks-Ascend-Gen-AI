@@ -12,10 +12,21 @@ class Settings(BaseSettings):
 
     # AI Configuration
     AI_ENABLED: bool = False  # Disabled by default for production safety
-    AI_API_KEY: Optional[str] = None
+    AI_PROVIDER: str = "claude_cli"  # Options: "auggie", "anthropic", "claude_cli"
+
+    # Claude CLI (for local testing)
+    CLAUDE_CLI_MODE: str = "headless"
+    CLAUDE_CODE_OAUTH_TOKEN: Optional[str] = None
+
+    # Anthropic Claude API (for production and local)
+    ANTHROPIC_API_KEY: Optional[str] = None
+    ANTHROPIC_MODEL: str = "claude-sonnet-4-20250514"  # Latest Claude Sonnet 4
+    ANTHROPIC_MAX_TOKENS: int = 4000
+    ANTHROPIC_TEMPERATURE: float = 0.7
+
+    # Auggie SDK (alternative, commented out by default)
+    AI_API_KEY: Optional[str] = None  # For Auggie SDK
     AI_MODEL: str = "claude-sonnet-4.5"
-    AI_MAX_TOKENS: int = 4000
-    AI_TEMPERATURE: float = 0.7
 
     # AI Usage Limits
     AI_DAILY_REQUEST_LIMIT: int = 1000
@@ -69,7 +80,15 @@ class Settings(BaseSettings):
         # In production, AI must be explicitly enabled
         if self.is_production and not self.AI_ENABLED:
             return False
-        return self.AI_ENABLED and self.AI_API_KEY is not None
+
+        # Check based on provider
+        if self.AI_PROVIDER == "anthropic":
+            return self.AI_ENABLED and self.ANTHROPIC_API_KEY is not None
+        elif self.AI_PROVIDER == "claude_cli":
+            # Claude CLI just needs to be enabled (will use login or token)
+            return self.AI_ENABLED
+        else:  # auggie
+            return self.AI_ENABLED and self.AI_API_KEY is not None
 
     class ConfigDict:
         env_file = ".env"

@@ -36,7 +36,13 @@ export default function DashboardPage() {
       return;
     }
 
-    if (user?.role === 'hr' || user?.role === 'super_admin') {
+    // Redirect Super Admin to their dedicated dashboard
+    if (user?.role === 'super_admin') {
+      router.push('/admin/dashboard');
+      return;
+    }
+
+    if (user?.role === 'hr') {
       fetchHRDashboardData();
     } else {
       setLoading(false);
