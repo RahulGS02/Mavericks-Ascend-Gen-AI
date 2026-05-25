@@ -1,26 +1,26 @@
 from sqlalchemy import Column, String, DateTime, ForeignKey, Index
-from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 import uuid
 
 from ..database import Base
+from .types import GUID, JSON
 
 
 class AuditLog(Base):
     """Audit trail for all system actions"""
     __tablename__ = "audit_logs"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    user_id = Column(GUID, ForeignKey("users.id"), nullable=True)
     
     # Action details
     action = Column(String(100), nullable=False)  # created, updated, deleted, login, etc.
     entity_type = Column(String(50), nullable=True)  # users, mavericks, batches, etc.
-    entity_id = Column(UUID(as_uuid=True), nullable=True)
-    
+    entity_id = Column(GUID, nullable=True)
+
     # Change tracking
-    old_value = Column(JSONB, nullable=True)
-    new_value = Column(JSONB, nullable=True)
+    old_value = Column(JSON, nullable=True)
+    new_value = Column(JSON, nullable=True)
     
     # Request metadata
     ip_address = Column(String(45), nullable=True)

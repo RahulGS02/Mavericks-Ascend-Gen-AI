@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/authStore';
 import DashboardLayout from '@/components/DashboardLayout';
 import {
   Users, DollarSign, Activity, AlertTriangle,
-  Database, Shield, Settings, Clock, TrendingUp
+  Database, Shield, Settings, Clock, TrendingUp, Sparkles
 } from 'lucide-react';
 import { apiClient } from '@/lib/api/client';
 
@@ -276,7 +276,22 @@ export default function SuperAdminDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <Link href="/admin/ai-search" className="group bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg shadow-lg p-5 hover:shadow-xl transition-all transform hover:scale-105">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-lg group-hover:bg-white/30 transition-all">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-base font-bold text-white mb-1 flex items-center gap-2">
+                  AI Search
+                  <span className="px-2 py-0.5 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full">NEW</span>
+                </h3>
+                <p className="text-sm text-blue-100">Query data with natural language</p>
+              </div>
+            </div>
+          </Link>
+
           <Link href="/admin/users" className="group bg-white rounded-lg shadow-md p-5 hover:shadow-lg transition-all border-l-4 border-blue-500">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg group-hover:from-blue-200 group-hover:to-blue-300 transition-all">

@@ -1,32 +1,33 @@
 from pydantic_settings import BaseSettings
 from typing import List, Optional
+import os
 
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str
+    DATABASE_URL: Optional[str] = None
 
     # Supabase
-    SUPABASE_URL: str
-    SUPABASE_SERVICE_KEY: str
+    SUPABASE_URL: Optional[str] = None
+    SUPABASE_SERVICE_KEY: Optional[str] = None
 
     # AI Configuration
     AI_ENABLED: bool = False  # Disabled by default for production safety
-    AI_PROVIDER: str = "claude_cli"  # Options: "auggie", "anthropic", "claude_cli"
+    AI_PROVIDER: str = "auggie"  # Options: "auggie", "anthropic", "claude_cli"
 
-    # Claude CLI (for local testing)
+    # Auggie SDK (CURRENTLY ACTIVE - WORKING)
+    AI_API_KEY: Optional[str] = None
+    AI_MODEL: str = "claude-sonnet-4.5"
+
+    # Claude CLI (for local testing - not working)
     CLAUDE_CLI_MODE: str = "headless"
     CLAUDE_CODE_OAUTH_TOKEN: Optional[str] = None
 
-    # Anthropic Claude API (for production and local)
+    # Anthropic Claude API (for future production)
     ANTHROPIC_API_KEY: Optional[str] = None
-    ANTHROPIC_MODEL: str = "claude-sonnet-4-20250514"  # Latest Claude Sonnet 4
+    ANTHROPIC_MODEL: str = "claude-sonnet-4-20250514"
     ANTHROPIC_MAX_TOKENS: int = 4000
     ANTHROPIC_TEMPERATURE: float = 0.7
-
-    # Auggie SDK (alternative, commented out by default)
-    AI_API_KEY: Optional[str] = None  # For Auggie SDK
-    AI_MODEL: str = "claude-sonnet-4.5"
 
     # AI Usage Limits
     AI_DAILY_REQUEST_LIMIT: int = 1000
@@ -38,7 +39,7 @@ class Settings(BaseSettings):
     AI_PERFORMANCE_INSIGHTS_ENABLED: bool = True
 
     # JWT
-    JWT_SECRET: str
+    JWT_SECRET: Optional[str] = None
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
 
@@ -82,17 +83,34 @@ class Settings(BaseSettings):
             return False
 
         # Check based on provider
-        if self.AI_PROVIDER == "anthropic":
+        if self.AI_PROVIDER == "auggie":
+            return self.AI_ENABLED and self.AI_API_KEY is not None
+        elif self.AI_PROVIDER == "anthropic":
             return self.AI_ENABLED and self.ANTHROPIC_API_KEY is not None
         elif self.AI_PROVIDER == "claude_cli":
             # Claude CLI just needs to be enabled (will use login or token)
             return self.AI_ENABLED
-        else:  # auggie
-            return self.AI_ENABLED and self.AI_API_KEY is not None
+        else:
+            return False
 
     class ConfigDict:
         env_file = ".env"
         case_sensitive = True
+
+    def model_post_init(self, __context) -> None:
+        """Validate required fields in non-test environments"""
+        is_testing = os.getenv("TESTING", "").lower() in ("true", "1", "yes")
+
+        if not is_testing:
+            # In production/development, these fields are required
+            if not self.DATABASE_URL:
+                raise ValueError("DATABASE_URL is required in non-test environments")
+            if not self.SUPABASE_URL:
+                raise ValueError("SUPABASE_URL is required in non-test environments")
+            if not self.SUPABASE_SERVICE_KEY:
+                raise ValueError("SUPABASE_SERVICE_KEY is required in non-test environments")
+            if not self.JWT_SECRET:
+                raise ValueError("JWT_SECRET is required in non-test environments")
 
 
 settings = Settings()

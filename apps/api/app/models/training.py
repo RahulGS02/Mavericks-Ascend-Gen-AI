@@ -1,11 +1,11 @@
 from sqlalchemy import Column, String, Integer, Date, DateTime, ForeignKey, Boolean, Text, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import uuid
 import enum
 
 from ..database import Base
+from .types import GUID
 
 
 class SessionStatus(str, enum.Enum):
@@ -20,16 +20,16 @@ class TrainingSession(Base):
     """Training session scheduling"""
     __tablename__ = "training_sessions"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    batch_id = Column(UUID(as_uuid=True), ForeignKey("batches.id", ondelete="CASCADE"), nullable=False)
-    job_id = Column(UUID(as_uuid=True), ForeignKey("pipeline_jobs.id"), nullable=False)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    batch_id = Column(GUID, ForeignKey("batches.id", ondelete="CASCADE"), nullable=False)
+    job_id = Column(GUID, ForeignKey("pipeline_jobs.id"), nullable=False)
 
     # Session Details
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     scheduled_date = Column(DateTime(timezone=True), nullable=False)
     duration_minutes = Column(Integer, nullable=False)
-    trainer_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    trainer_id = Column(GUID, ForeignKey("users.id"), nullable=True)
 
     # Location
     location = Column(String(255), nullable=True)

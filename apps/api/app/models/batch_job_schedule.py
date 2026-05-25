@@ -3,13 +3,13 @@ Batch Job Schedule Model
 Links pipeline jobs to actual batch execution timeline
 """
 from sqlalchemy import Column, String, Text, Boolean, DateTime, ForeignKey, Integer, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import uuid
 import enum
 
 from ..database import Base
+from .types import GUID
 
 
 class JobScheduleStatus(str, enum.Enum):
@@ -38,11 +38,11 @@ class BatchJobSchedule(Base):
     """
     __tablename__ = "batch_job_schedules"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+
     # Links
-    batch_id = Column(UUID(as_uuid=True), ForeignKey("batches.id", ondelete="CASCADE"), nullable=False, index=True)
-    pipeline_job_id = Column(UUID(as_uuid=True), ForeignKey("pipeline_jobs.id", ondelete="CASCADE"), nullable=False, index=True)
+    batch_id = Column(GUID, ForeignKey("batches.id", ondelete="CASCADE"), nullable=False, index=True)
+    pipeline_job_id = Column(GUID, ForeignKey("pipeline_jobs.id", ondelete="CASCADE"), nullable=False, index=True)
     
     # Scheduling Information
     scheduled_start_date = Column(DateTime(timezone=True), nullable=True)
@@ -57,7 +57,7 @@ class BatchJobSchedule(Base):
     attendance_count = Column(Integer, default=0)  # How many attended
     
     # Assessment Link (for ASSESSMENT type jobs)
-    assessment_id = Column(UUID(as_uuid=True), ForeignKey("assessments.id", ondelete="SET NULL"), nullable=True, index=True)
+    assessment_id = Column(GUID, ForeignKey("assessments.id", ondelete="SET NULL"), nullable=True, index=True)
     
     # Deployment Link (for DEPLOYMENT type jobs)
     deployment_project_link = Column(String(500), nullable=True)  # GitHub repo, etc.
@@ -75,7 +75,7 @@ class BatchJobSchedule(Base):
     is_published = Column(Boolean, default=False)  # Whether mavericks can see this yet
     
     # Metadata
-    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    created_by = Column(GUID, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     

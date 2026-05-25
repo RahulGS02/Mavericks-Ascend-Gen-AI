@@ -7,7 +7,7 @@ import { useAuthStore, UserRole } from '@/store/authStore';
 import {
   Home, Users, BookOpen, Briefcase, BarChart3, Settings,
   LogOut, Menu, X, GraduationCap, Calendar, FileText, UserPlus,
-  TrendingUp, Award, Clock, Target, Shield, DollarSign
+  TrendingUp, Award, Clock, Target, Shield, DollarSign, Sparkles
 } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 
@@ -51,6 +51,12 @@ const navigationItems: NavItem[] = [
     href: '/dashboard',
     icon: <Home className="w-5 h-5" />,
     roles: ['hr'], // Removed super_admin - they have their own dashboard
+  },
+  {
+    label: 'AI Talent Search',
+    href: '/hr/talent-search',
+    icon: <Sparkles className="w-5 h-5" />,
+    roles: ['super_admin', 'hr', 'manager'],
   },
   {
     label: 'Pending Profiles',

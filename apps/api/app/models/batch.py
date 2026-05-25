@@ -1,11 +1,11 @@
 from sqlalchemy import Column, String, Date, DateTime, ForeignKey, Enum as SQLEnum, Integer, Text
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import uuid
 import enum
 
 from ..database import Base
+from .types import GUID, StringArray
 
 
 class BatchStatus(str, enum.Enum):
@@ -32,16 +32,16 @@ class Batch(Base):
     """Batch model - group of mavericks following a pipeline"""
     __tablename__ = "batches"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
     name = Column(String(255), nullable=False, unique=True)
     description = Column(Text, nullable=True)
-    pipeline_id = Column(UUID(as_uuid=True), ForeignKey("pipelines.id"), nullable=False)
+    pipeline_id = Column(GUID, ForeignKey("pipelines.id"), nullable=False)
 
     # AI Batch Suggestion Fields
     category = Column(SQLEnum(BatchCategory), nullable=True)  # Batch category (required for AI matching)
-    focus_areas = Column(ARRAY(String), nullable=True)  # e.g., ["React", "Node.js", "AWS"]
-    required_skills = Column(ARRAY(String), nullable=True)  # Must-have skills
-    preferred_skills = Column(ARRAY(String), nullable=True)  # Nice-to-have skills
+    focus_areas = Column(StringArray, nullable=True)  # e.g., ["React", "Node.js", "AWS"]
+    required_skills = Column(StringArray, nullable=True)  # Must-have skills
+    preferred_skills = Column(StringArray, nullable=True)  # Nice-to-have skills
     target_role = Column(String(255), nullable=True)  # e.g., "Full Stack Developer"
 
     # Schedule
@@ -53,8 +53,8 @@ class Batch(Base):
     current_enrollment = Column(Integer, default=0, nullable=False)
 
     # Assignment
-    trainer_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
-    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    trainer_id = Column(GUID, ForeignKey("users.id"), nullable=True)
+    created_by = Column(GUID, ForeignKey("users.id"), nullable=False)
 
     # Status
     status = Column(SQLEnum(BatchStatus, values_callable=lambda x: [e.value for e in x]), default=BatchStatus.PLANNED, nullable=False)

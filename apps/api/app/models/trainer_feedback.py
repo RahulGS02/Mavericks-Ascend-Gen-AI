@@ -4,12 +4,12 @@ Stores feedback from mavericks about trainers after completing training
 """
 import uuid
 from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
 
-from app.database import Base
+from ..database import Base
+from .types import GUID
 
 
 class FeedbackRating(str, enum.Enum):
@@ -30,12 +30,12 @@ class TrainerFeedback(Base):
     """
     __tablename__ = "trainer_feedback"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+
     # Foreign Keys
-    maverick_id = Column(UUID(as_uuid=True), ForeignKey("mavericks.id", ondelete="CASCADE"), nullable=False)
-    trainer_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    batch_id = Column(UUID(as_uuid=True), ForeignKey("batches.id", ondelete="CASCADE"), nullable=False)
+    maverick_id = Column(GUID, ForeignKey("mavericks.id", ondelete="CASCADE"), nullable=False)
+    trainer_id = Column(GUID, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    batch_id = Column(GUID, ForeignKey("batches.id", ondelete="CASCADE"), nullable=False)
     
     # Rating (1-5 stars)
     rating = Column(SQLEnum(FeedbackRating, name='feedbackrating', create_constraint=True, native_enum=True), nullable=False)

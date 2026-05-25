@@ -1,11 +1,11 @@
 from sqlalchemy import Column, Text, DateTime, ForeignKey, Numeric, Enum as SQLEnum, UniqueConstraint
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import uuid
 import enum
 
 from ..database import Base
+from .types import GUID
 
 
 class ProgressStatus(str, enum.Enum):
@@ -25,10 +25,10 @@ class MaverickJobProgress(Base):
     """Track maverick progress through pipeline jobs"""
     __tablename__ = "maverick_job_progress"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    maverick_id = Column(UUID(as_uuid=True), ForeignKey("mavericks.id", ondelete="CASCADE"), nullable=False)
-    batch_id = Column(UUID(as_uuid=True), ForeignKey("batches.id", ondelete="CASCADE"), nullable=False)
-    job_id = Column(UUID(as_uuid=True), ForeignKey("pipeline_jobs.id"), nullable=False)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    maverick_id = Column(GUID, ForeignKey("mavericks.id", ondelete="CASCADE"), nullable=False)
+    batch_id = Column(GUID, ForeignKey("batches.id", ondelete="CASCADE"), nullable=False)
+    job_id = Column(GUID, ForeignKey("pipeline_jobs.id"), nullable=False)
     
     # Progress Details
     status = Column(SQLEnum(ProgressStatus, values_callable=lambda x: [e.value for e in x]), default=ProgressStatus.PENDING, nullable=False)

@@ -2,18 +2,18 @@
 AI Usage Tracking Models
 """
 from sqlalchemy import Column, String, Integer, DateTime, Numeric, Text
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 import uuid
 
 from ..database import Base
+from .types import GUID
 
 
 class AIUsageLog(Base):
     """Log of AI API usage for cost tracking"""
     __tablename__ = "ai_usage_logs"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
     
     # Request Details
     feature = Column(String(100), nullable=False)  # skill_extraction, resume_parsing, etc.

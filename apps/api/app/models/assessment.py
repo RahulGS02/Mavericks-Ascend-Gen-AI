@@ -1,19 +1,19 @@
 from sqlalchemy import Column, Integer, Text, Date, DateTime, ForeignKey, Numeric, Boolean, String
-from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import uuid
 
 from ..database import Base
+from .types import GUID, JSON
 
 
 class Assessment(Base):
     """Assessment job configuration"""
     __tablename__ = "assessments"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    job_id = Column(UUID(as_uuid=True), ForeignKey("pipeline_jobs.id"), nullable=False)
-    batch_id = Column(UUID(as_uuid=True), ForeignKey("batches.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    job_id = Column(GUID, ForeignKey("pipeline_jobs.id"), nullable=False)
+    batch_id = Column(GUID, ForeignKey("batches.id", ondelete="CASCADE"), nullable=False)
 
     # Assessment Details
     title = Column(String(255), nullable=False)
@@ -25,10 +25,10 @@ class Assessment(Base):
     scheduled_date = Column(DateTime(timezone=True), nullable=True)
 
     # Store job metadata (skills_tested, etc.) - renamed to avoid SQLAlchemy conflict
-    config_metadata = Column(JSONB, nullable=True)
+    config_metadata = Column(JSON, nullable=True)
 
     # Timestamps
-    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    created_by = Column(GUID, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
@@ -44,10 +44,10 @@ class AssessmentAttempt(Base):
     """Track assessment attempts and scores"""
     __tablename__ = "assessment_attempts"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    assessment_id = Column(UUID(as_uuid=True), ForeignKey("assessments.id", ondelete="CASCADE"), nullable=False)
-    maverick_id = Column(UUID(as_uuid=True), ForeignKey("mavericks.id", ondelete="CASCADE"), nullable=False)
-    batch_id = Column(UUID(as_uuid=True), ForeignKey("batches.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    assessment_id = Column(GUID, ForeignKey("assessments.id", ondelete="CASCADE"), nullable=False)
+    maverick_id = Column(GUID, ForeignKey("mavericks.id", ondelete="CASCADE"), nullable=False)
+    batch_id = Column(GUID, ForeignKey("batches.id", ondelete="CASCADE"), nullable=False)
 
     # Attempt Details
     marks_obtained = Column(Numeric(5, 2), nullable=False)
@@ -56,7 +56,7 @@ class AssessmentAttempt(Base):
     feedback = Column(Text, nullable=True)
 
     # Evaluation Info
-    evaluated_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    evaluated_by = Column(GUID, ForeignKey("users.id"), nullable=False)
     evaluated_at = Column(DateTime(timezone=True), nullable=False)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

@@ -1,11 +1,11 @@
 from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import uuid
 import enum
 
 from ..database import Base
+from .types import GUID, JSON
 
 
 class ProfileStatus(str, enum.Enum):
@@ -27,8 +27,8 @@ class Maverick(Base):
     """Maverick (trainee) profile model"""
     __tablename__ = "mavericks"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=True)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    user_id = Column(GUID, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=True)
 
     # Personal Information (direct fields - no need for user lookup)
     name = Column(String(255), nullable=False)
@@ -46,10 +46,10 @@ class Maverick(Base):
 
     # Resume & Skills
     resume_url = Column(Text)
-    skills = Column(JSONB, default=list)  # Self-declared skills
-    ai_extracted_skills = Column(JSONB, default=list)  # AI-parsed skills (flattened list)
+    skills = Column(JSON, default=list)  # Self-declared skills
+    ai_extracted_skills = Column(JSON, default=list)  # AI-parsed skills (flattened list)
     ai_summary = Column(Text)  # AI-generated summary
-    ai_resume_data = Column(JSONB)  # Complete AI-parsed resume data (education, experience, projects, etc.)
+    ai_resume_data = Column(JSON)  # Complete AI-parsed resume data (education, experience, projects, etc.)
 
     # Status
     profile_status = Column(SQLEnum(ProfileStatus, values_callable=lambda x: [e.value for e in x]), default=ProfileStatus.PENDING, nullable=False, index=True)
@@ -57,14 +57,14 @@ class Maverick(Base):
 
     # Review Information
     review_notes = Column(Text)
-    reviewed_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    reviewed_by = Column(GUID, ForeignKey("users.id"), nullable=True)
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     # Current Assignment
-    current_batch_id = Column(UUID(as_uuid=True), ForeignKey("batches.id"), nullable=True)
+    current_batch_id = Column(GUID, ForeignKey("batches.id"), nullable=True)
     
     # Relationships
     user = relationship("User", back_populates="maverick", foreign_keys=[user_id])

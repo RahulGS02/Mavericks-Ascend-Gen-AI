@@ -63,3 +63,41 @@ export const authAPI = {
   logout: () =>
     api.post('/auth/logout'),
 };
+
+// Natural Language Query API (Super Admin)
+export const nlQueryAPI = {
+  search: (query: string, maxRows: number = 100) =>
+    api.post('/nl-query/search', { query, max_rows: maxRows }),
+
+  downloadExcel: (query: string, maxRows: number = 100) =>
+    api.post('/nl-query/search/download',
+      { query, max_rows: maxRows },
+      { responseType: 'blob' }
+    ),
+};
+
+// AI-Powered Talent Search API (HR, Manager, Super Admin)
+export const talentSearchAPI = {
+  // Main search endpoint
+  search: (params: {
+    query: string;
+    max_results?: number;
+    include_similar?: boolean;
+    urgency?: 'immediate' | 'flexible';
+  }) =>
+    api.post('/talent-search/search', params),
+
+  // Explain why a candidate was suggested
+  explain: (candidateId: string, requiredSkills: string[]) =>
+    api.get(`/talent-search/explain/${candidateId}`, {
+      params: { required_skills: requiredSkills.join(',') }
+    }),
+
+  // Get cost estimate for AI search
+  getCostEstimate: () =>
+    api.get('/talent-search/cost-estimate'),
+
+  // Get talent pool statistics
+  getStatistics: () =>
+    api.get('/talent-search/statistics'),
+};

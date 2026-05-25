@@ -12,8 +12,10 @@ from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
 from decimal import Decimal
 from app.config import settings
+from app.logging_config import get_ai_logger
 
-logger = logging.getLogger(__name__)
+# Use dedicated AI logger that writes to separate file
+logger = get_ai_logger()
 
 # Disable SSL warnings for self-signed certificates
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -684,6 +686,142 @@ Insights:
                 )
             }
         }
+
+    async def generate_sql_from_natural_language(
+        self,
+        natural_query: str,
+        schema_context: str
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Generate PostgreSQL query from natural language using AI
+
+        Args:
+            natural_query: User's natural language query (e.g., "Show me available mavericks")
+            schema_context: Complete database schema information
+
+        Returns:
+            Dictionary with:
+            {
+                "sql": "SELECT ... FROM ...",
+                "explanation": "This query finds...",
+                "tables_used": ["mavericks", "batches"],
+                "estimated_rows": 50
+            }
+
+        Example:
+            Input: "Show me mavericks available for deployment"
+            Output: {
+                "sql": "SELECT m.id, m.name, m.email FROM mavericks m WHERE m.deployment_status = 'AVAILABLE'...",
+                "explanation": "Returns all mavericks with AVAILABLE deployment status",
+                "tables_used": ["mavericks"]
+            }
+        """
+        if not settings.AI_ENABLED:
+            logger.warning("AI is disabled - cannot generate SQL")
+            return None
+
+        logger.info(f"Generating SQL for natural language query: {natural_query}")
+
+        system_prompt = f"""You are an expert PostgreSQL database analyst and SQL generator.
+
+DATABASE SCHEMA:
+{schema_context}
+
+YOUR TASK:
+Generate a safe, read-only PostgreSQL SELECT query based on the user's natural language request.
+
+CRITICAL RULES:
+1. Generate ONLY SELECT queries (no INSERT, UPDATE, DELETE, DROP, ALTER, TRUNCATE, EXEC)
+2. Use proper PostgreSQL syntax and functions
+3. Use exact table and column names from the schema
+4. Use exact ENUM values with correct case (e.g., 'AVAILABLE' not 'available', 'approved' not 'APPROVED')
+5. Use proper JOIN syntax with explicit ON conditions
+6. Always include a LIMIT clause (maximum 1000 rows)
+7. Use table aliases for readability (e.g., m for mavericks, b for batches)
+8. For UUID columns, use proper casting if needed
+9. For date/time, use PostgreSQL functions (NOW(), CURRENT_DATE, DATE_TRUNC, INTERVAL)
+10. For JSONB fields, use proper operators (@>, ->, jsonb_array_length)
+11. For TEXT arrays, use ANY() operator
+12. Return ONLY valid JSON - no explanatory text before or after
+
+RESPONSE FORMAT (valid JSON only):
+{{
+    "sql": "SELECT ... FROM ... WHERE ... LIMIT ...",
+    "explanation": "Brief one-line explanation of what this query returns",
+    "tables_used": ["table1", "table2"],
+    "estimated_complexity": "simple|moderate|complex"
+}}
+
+COMMON PATTERNS:
+- Available mavericks: WHERE deployment_status = 'AVAILABLE' AND profile_status = 'approved'
+- Skills filter: JOIN maverick_skills ms ON m.id = ms.maverick_id WHERE ms.skill_name = 'Python'
+- Active batches: WHERE status = 'ACTIVE'
+- Date range: WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+- Count: SELECT COUNT(*) as count FROM ...
+- Aggregation: SELECT column, COUNT(*) as count FROM ... GROUP BY column"""
+
+        prompt = f"Generate a PostgreSQL query for this request:\n\n{natural_query}"
+
+        try:
+            response = await self._call_ai(
+                prompt=prompt,
+                system_prompt=system_prompt,
+                feature="nl_to_sql",
+                max_tokens=1000
+            )
+
+            if not response:
+                logger.error("No response from AI for SQL generation")
+                return None
+
+            # Parse JSON response
+            try:
+                result = json.loads(response)
+
+                # Validate required fields
+                if "sql" not in result:
+                    logger.error("AI response missing 'sql' field")
+                    return None
+
+                # Add defaults for optional fields
+                if "explanation" not in result:
+                    result["explanation"] = "Generated SQL query"
+                if "tables_used" not in result:
+                    result["tables_used"] = []
+                if "estimated_complexity" not in result:
+                    result["estimated_complexity"] = "moderate"
+
+                logger.info(f"✅ Successfully generated SQL query")
+                logger.info(f"   Tables used: {', '.join(result['tables_used'])}")
+                logger.info(f"   Complexity: {result['estimated_complexity']}")
+
+                return result
+
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse AI response as JSON: {e}")
+                logger.debug(f"Response was: {response[:500]}")
+
+                # Try to extract SQL if response is not JSON
+                if "SELECT" in response.upper():
+                    logger.warning("Response contains SQL but not in JSON format, attempting extraction")
+                    # Extract SQL between SELECT and semicolon/end
+                    import re
+                    sql_match = re.search(r'(SELECT\s+.+?)(?:;|\n\n|$)', response, re.IGNORECASE | re.DOTALL)
+                    if sql_match:
+                        extracted_sql = sql_match.group(1).strip()
+                        return {
+                            "sql": extracted_sql,
+                            "explanation": "Extracted SQL from AI response",
+                            "tables_used": [],
+                            "estimated_complexity": "unknown"
+                        }
+
+                return None
+
+        except Exception as e:
+            logger.error(f"Error generating SQL from natural language: {e}")
+            self.tracker.increment_error()
+            return None
 
 
 # Global AI service instance

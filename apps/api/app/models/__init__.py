@@ -16,6 +16,7 @@ from .maverick_skill import MaverickSkill
 from .ai_insights import AIInsight
 from .audit import AuditLog
 from .trainer_feedback import TrainerFeedback, FeedbackRating
+from .requirement_workflow import RequirementCandidate, RequirementInterview, RequirementWorkflowHistory
 
 __all__ = [
     # User
@@ -67,4 +68,9 @@ __all__ = [
 
     # Skills
     "MaverickSkill",
+
+    # Requirement Workflow
+    "RequirementCandidate",
+    "RequirementInterview",
+    "RequirementWorkflowHistory",
 ]

@@ -1,11 +1,11 @@
 from sqlalchemy import Column, String, Text, Boolean, DateTime, ForeignKey, Integer, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import uuid
 import enum
 
 from ..database import Base
+from .types import GUID, JSON
 
 
 class JobType(str, enum.Enum):
@@ -35,11 +35,11 @@ class JobStatus(str, enum.Enum):
 class Pipeline(Base):
     """Pipeline model - defines the training journey"""
     __tablename__ = "pipelines"
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
     name = Column(String(255), nullable=False)
     description = Column(Text)
-    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    created_by = Column(GUID, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     is_template = Column(Boolean, default=False, nullable=False)
@@ -57,9 +57,9 @@ class Pipeline(Base):
 class PipelineJob(Base):
     """Individual job/stage within a pipeline"""
     __tablename__ = "pipeline_jobs"
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    pipeline_id = Column(UUID(as_uuid=True), ForeignKey("pipelines.id", ondelete="CASCADE"), nullable=False)
+
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    pipeline_id = Column(GUID, ForeignKey("pipelines.id", ondelete="CASCADE"), nullable=False)
 
     # Job Details
     name = Column(String(255), nullable=False)  # Changed from job_name to name
@@ -74,7 +74,7 @@ class PipelineJob(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Job-specific configuration (e.g., assessment details, training modules)
-    job_metadata = Column(JSONB, default=dict)
+    job_metadata = Column(JSON, default=dict)
     
     # Relationships
     pipeline = relationship("Pipeline", back_populates="jobs")

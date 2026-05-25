@@ -1,11 +1,11 @@
 from sqlalchemy import Column, String, Text, Date, DateTime, Integer, ForeignKey, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import uuid
 import enum
 
 from ..database import Base
+from .types import GUID
 
 
 class DeploymentRequestStatus(str, enum.Enum):
@@ -26,9 +26,9 @@ class Deployment(Base):
     """Final deployment record"""
     __tablename__ = "deployments"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    maverick_id = Column(UUID(as_uuid=True), ForeignKey("mavericks.id", ondelete="CASCADE"), nullable=False)
-    batch_id = Column(UUID(as_uuid=True), ForeignKey("batches.id"), nullable=True)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    maverick_id = Column(GUID, ForeignKey("mavericks.id", ondelete="CASCADE"), nullable=False)
+    batch_id = Column(GUID, ForeignKey("batches.id"), nullable=True)
 
     # Deployment Details
     project_name = Column(String(255), nullable=False)
@@ -46,7 +46,7 @@ class Deployment(Base):
     status = Column(SQLEnum(DeploymentStatus, values_callable=lambda x: [e.value for e in x]), default=DeploymentStatus.ACTIVE, nullable=False)
 
     # Metadata
-    deployed_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    deployed_by = Column(GUID, ForeignKey("users.id"), nullable=False)
     deployed_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     notes = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -64,9 +64,9 @@ class DeploymentRequest(Base):
     """Deployment requirement cards - post requirements, assign mavericks later"""
     __tablename__ = "deployment_requests"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    maverick_id = Column(UUID(as_uuid=True), ForeignKey("mavericks.id"), nullable=True)  # Assigned later
-    requested_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)  # Manager or HR
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    maverick_id = Column(GUID, ForeignKey("mavericks.id"), nullable=True)  # Assigned later
+    requested_by = Column(GUID, ForeignKey("users.id"), nullable=False)  # Manager or HR
 
     # Role Requirements (Most Important!)
     role_title = Column(String(255), nullable=False)  # e.g., "Senior Full Stack Developer"
@@ -82,7 +82,7 @@ class DeploymentRequest(Base):
 
     # Review
     status = Column(SQLEnum(DeploymentRequestStatus, values_callable=lambda x: [e.value for e in x]), default=DeploymentRequestStatus.PENDING, nullable=False)
-    approved_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    approved_by = Column(GUID, ForeignKey("users.id"), nullable=True)
     approved_at = Column(DateTime(timezone=True), nullable=True)
     rejection_reason = Column(Text, nullable=True)
 

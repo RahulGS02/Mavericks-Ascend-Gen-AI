@@ -3,13 +3,13 @@ Maverick Skill Model
 Tracks individual skill proficiency levels for each maverick
 """
 from sqlalchemy import Column, String, Float, Integer, DateTime, ForeignKey, Text
-from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import uuid
 import enum
 
 from ..database import Base
+from .types import GUID, JSON
 
 
 class SkillCategory(str, enum.Enum):
@@ -42,10 +42,10 @@ class MaverickSkill(Base):
     """
     __tablename__ = "maverick_skills"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
     
     # Relationships
-    maverick_id = Column(UUID(as_uuid=True), ForeignKey("mavericks.id", ondelete="CASCADE"), nullable=False)
+    maverick_id = Column(GUID, ForeignKey("mavericks.id", ondelete="CASCADE"), nullable=False)
     
     # Skill details
     skill_name = Column(String(255), nullable=False)  # e.g., "Python", "React", "Communication"
@@ -69,10 +69,10 @@ class MaverickSkill(Base):
     
     # AI insights
     ai_feedback = Column(Text, nullable=True)  # AI-generated feedback on skill
-    improvement_suggestions = Column(JSONB, nullable=True)  # AI suggestions for improvement
-    
+    improvement_suggestions = Column(JSON, nullable=True)  # AI suggestions for improvement
+
     # Radar chart data
-    radar_data = Column(JSONB, nullable=True)  # Pre-computed radar chart coordinates
+    radar_data = Column(JSON, nullable=True)  # Pre-computed radar chart coordinates
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
