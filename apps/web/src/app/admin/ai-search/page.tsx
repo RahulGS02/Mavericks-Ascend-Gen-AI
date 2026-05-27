@@ -89,7 +89,9 @@ export default function AISearchPage() {
     setResults(null);
 
     try {
-      const response = await nlQueryAPI.search(query, 100);
+      // Do NOT pass maxRows — let the backend detect the limit from the
+      // natural language text ("Top 10" → 10, "Show all" → all records).
+      const response = await nlQueryAPI.search(query);
       setResults(response.data);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to execute query. Please try again.');
@@ -109,7 +111,8 @@ export default function AISearchPage() {
     setError(null);
 
     try {
-      const response = await nlQueryAPI.downloadExcel(query, 100);
+      // No maxRows override — use same limit the search used.
+      const response = await nlQueryAPI.downloadExcel(query);
       
       // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data]));

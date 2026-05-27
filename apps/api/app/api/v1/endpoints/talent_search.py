@@ -213,25 +213,28 @@ async def get_search_cost_estimate(
     """
     return {
         "per_query_cost": {
-            "query_parsing": 0.0015,  # ~500 tokens
+            "query_parsing": 0.00044,  # ~500 input + ~150 output tokens @ gpt-4.1-mini pricing
             "candidate_scoring": 0.0000,  # Rules-based, no AI
-            "total": 0.0015
+            "total": 0.00044
         },
         "monthly_estimates": {
-            "100_queries": 0.15,
-            "500_queries": 0.75,
-            "1000_queries": 1.50,
-            "5000_queries": 7.50
+            "100_queries": 0.044,
+            "500_queries": 0.22,
+            "1000_queries": 0.44,
+            "5000_queries": 2.20
         },
         "token_usage": {
-            "per_query": 500,
-            "provider": "Auggie SDK",
-            "model": "Claude Sonnet 4.5"
+            "input_per_query": 500,
+            "output_per_query": 150,
+            "provider": "Azure AI Foundry",
+            "model": "gpt-4.1-mini",
+            "pricing_input_per_1m": 0.40,
+            "pricing_output_per_1m": 1.60
         },
         "optimization": {
             "sql_pre_filtering": "Reduces AI processing by ~80%",
             "rules_based_scoring": "No AI tokens for scoring",
-            "cost_target": "< $0.003 per query"
+            "cost_target": "< $0.001 per query"
         }
     }
 

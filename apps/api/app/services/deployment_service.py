@@ -173,7 +173,7 @@ def auto_activate_deployment_job(
     if existing_schedule:
         logger.info(f"📅 Deployment job already scheduled - Status: {existing_schedule.status}")
         # Already scheduled, just check if we should mark it as in-progress
-        if existing_schedule.status == JobScheduleStatus.PENDING:
+        if existing_schedule.status == JobScheduleStatus.SCHEDULED:
             # Check if all other jobs are completed
             other_schedules = db.query(BatchJobSchedule).filter(
                 BatchJobSchedule.batch_id == batch_id,

@@ -10,6 +10,7 @@ import {
   TrendingUp, Award, Clock, Target, Shield, DollarSign, Sparkles
 } from 'lucide-react';
 import NotificationBell from './NotificationBell';
+import ChatBot from './ChatBot';
 
 interface NavItem {
   label: string;
@@ -167,15 +168,9 @@ const navigationItems: NavItem[] = [
     roles: ['maverick'],
   },
   {
-    label: 'My Progress',
-    href: '/student/progress',
-    icon: <TrendingUp className="w-5 h-5" />,
-    roles: ['maverick'],
-  },
-  {
-    label: 'My Batch',
+    label: 'My Batches',
     href: '/student/batch',
-    icon: <Users className="w-5 h-5" />,
+    icon: <GraduationCap className="w-5 h-5" />,
     roles: ['maverick'],
   },
   {
@@ -334,6 +329,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           {children}
         </main>
       </div>
+
+      {/* AI Chatbot — floating widget, visible on every page */}
+      <ChatBot />
     </div>
   );
 }

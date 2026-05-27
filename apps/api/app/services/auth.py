@@ -1,7 +1,10 @@
 """
 Authentication service for password hashing and verification
 """
-from passlib.context import CryptContext
+# Use bcrypt directly — passlib 1.7.4 is incompatible with bcrypt >= 4.0.
+# passlib's detect_wrap_bug() passes a >72-byte password which bcrypt 4.x
+# rejects with ValueError, crashing login with HTTP 500.
+import bcrypt as _bcrypt
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from typing import Optional
@@ -12,35 +15,33 @@ from ..models.user import User, UserRole
 from ..database import get_db
 from sqlalchemy.orm import Session
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
-    Verify a plain password against a hashed password
-    
-    Args:
-        plain_password: Plain text password
-        hashed_password: Bcrypt hashed password
-        
-    Returns:
-        True if password matches, False otherwise
+    Verify a plain password against a bcrypt hash.
+    Uses bcrypt library directly (bypasses passlib incompatibility).
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        pw_bytes   = plain_password.encode("utf-8")
+        hash_bytes = (
+            hashed_password.encode("utf-8")
+            if isinstance(hashed_password, str)
+            else hashed_password
+        )
+        return _bcrypt.checkpw(pw_bytes, hash_bytes)
+    except Exception:
+        return False
 
 
 def get_password_hash(password: str) -> str:
     """
-    Hash a plain password using bcrypt
-    
-    Args:
-        password: Plain text password
-        
-    Returns:
-        Bcrypt hashed password
+    Hash a plain password with bcrypt (cost factor 12).
+    Uses bcrypt library directly (bypasses passlib incompatibility).
     """
-    return pwd_context.hash(password)
+    return _bcrypt.hashpw(
+        password.encode("utf-8"),
+        _bcrypt.gensalt(rounds=12),
+    ).decode("utf-8")
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:

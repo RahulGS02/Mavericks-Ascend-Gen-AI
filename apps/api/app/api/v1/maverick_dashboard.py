@@ -4,8 +4,8 @@ Student-focused dashboard showing only personal learning data
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, or_
-from datetime import datetime, timedelta
+from sqlalchemy import func, and_, or_, distinct
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from app.database import get_db
@@ -14,8 +14,9 @@ from app.models.maverick import Maverick
 from app.models.batch import Batch
 from app.models.progress import MaverickJobProgress, ProgressStatus
 from app.models.pipeline import Pipeline, PipelineJob
-from app.models.assessment import AssessmentAttempt
+from app.models.assessment import Assessment, AssessmentAttempt
 from app.models.training import TrainingSession, SessionStatus
+from app.models.batch_job_schedule import BatchJobSchedule, JobScheduleStatus
 from app.models.maverick_skill import MaverickSkill
 from app.services.auth import get_current_user
 
@@ -214,12 +215,13 @@ async def get_maverick_dashboard_overview(
         })
 
     # 6. UPCOMING TRAINING SESSIONS - Student's class schedule
+    _now = datetime.now(timezone.utc)
     upcoming_sessions = db.query(TrainingSession).filter(
         TrainingSession.batch_id == maverick.current_batch_id,
-        TrainingSession.scheduled_date >= datetime.utcnow(),  # Changed from session_date to scheduled_date
+        TrainingSession.scheduled_date >= _now,
         TrainingSession.status.in_([
-            SessionStatus.SCHEDULED,  # Changed from TrainingSessionStatus to SessionStatus
-            SessionStatus.IN_PROGRESS
+            SessionStatus.SCHEDULED,
+            SessionStatus.IN_PROGRESS,
         ])
     ).order_by(TrainingSession.scheduled_date).limit(10).all()
 
@@ -559,3 +561,351 @@ async def get_batch_leaderboard(
         },
         "upcoming_sessions": upcoming_sessions
     }
+
+
+@router.get("/batches")
+async def get_my_batches(
+    maverick: Maverick = Depends(get_maverick_user),
+    db: Session = Depends(get_db)
+):
+    """
+    List all batches the maverick is enrolled in.
+    Discovers batches via job progress records AND current_batch_id.
+    """
+    # Collect all batch IDs from progress records
+    rows = db.query(distinct(MaverickJobProgress.batch_id)).filter(
+        MaverickJobProgress.maverick_id == maverick.id
+    ).all()
+    batch_ids = set(str(row[0]) for row in rows)
+
+    # Always include current_batch_id even if no progress records yet
+    if maverick.current_batch_id:
+        batch_ids.add(str(maverick.current_batch_id))
+
+    result = []
+    for bid in batch_ids:
+        batch = db.query(Batch).filter(Batch.id == bid).first()
+        if not batch:
+            continue
+
+        pipeline = db.query(Pipeline).filter(Pipeline.id == batch.pipeline_id).first()
+        total_jobs = db.query(PipelineJob).filter(
+            PipelineJob.pipeline_id == batch.pipeline_id
+        ).count()
+
+        progress_records = db.query(MaverickJobProgress).filter(
+            MaverickJobProgress.maverick_id == maverick.id,
+            MaverickJobProgress.batch_id == bid
+        ).all()
+
+        completed_jobs = sum(1 for p in progress_records if p.status.value == "COMPLETED")
+        overall = (
+            sum(float(p.completion_percentage or 0) for p in progress_records) / total_jobs
+        ) if total_jobs else 0.0
+
+        result.append({
+            "batch_id": str(batch.id),
+            "batch_name": batch.name,
+            "pipeline_name": pipeline.name if pipeline else "Unknown",
+            "status": batch.status.value,
+            "start_date": batch.start_date.isoformat() if batch.start_date else None,
+            "end_date": batch.end_date.isoformat() if batch.end_date else None,
+            "overall_progress": round(overall, 1),
+            "completed_jobs": completed_jobs,
+            "total_jobs": total_jobs,
+            "is_current": str(maverick.current_batch_id) == bid,
+        })
+
+    # Current batch first, then alphabetical
+    result.sort(key=lambda x: (not x["is_current"], x["batch_name"]))
+    return {"batches": result}
+
+
+@router.get("/batch/{batch_id}")
+async def get_batch_detail(
+    batch_id: str,
+    maverick: Maverick = Depends(get_maverick_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Detailed view of a single batch: maverick's own progress steps + full leaderboard.
+    """
+    batch = db.query(Batch).filter(Batch.id == batch_id).first()
+    if not batch:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Batch not found")
+
+    # Verify the maverick belongs to this batch
+    enrolled = str(maverick.current_batch_id) == batch_id or db.query(
+        MaverickJobProgress
+    ).filter(
+        MaverickJobProgress.maverick_id == maverick.id,
+        MaverickJobProgress.batch_id == batch_id
+    ).first() is not None
+
+    if not enrolled:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not enrolled in this batch"
+        )
+
+    pipeline = db.query(Pipeline).filter(Pipeline.id == batch.pipeline_id).first()
+    trainer = db.query(User).filter(User.id == batch.trainer_id).first() if batch.trainer_id else None
+
+    # ── My Progress ──────────────────────────────────────────────────────────
+    pipeline_jobs = db.query(PipelineJob).filter(
+        PipelineJob.pipeline_id == batch.pipeline_id
+    ).order_by(PipelineJob.sequence_order).all()
+
+    progress_records = db.query(MaverickJobProgress).filter(
+        MaverickJobProgress.maverick_id == maverick.id,
+        MaverickJobProgress.batch_id == batch_id
+    ).all()
+    progress_map = {str(p.job_id): p for p in progress_records}
+
+    pipeline_steps = []
+    completed_count = 0
+    total_completion = 0.0
+    found_current = False
+
+    for job in pipeline_jobs:
+        prog = progress_map.get(str(job.id))
+        st = prog.status.value if prog else "PENDING"
+        completion = float(prog.completion_percentage or 0) if prog else 0.0
+
+        step = {
+            "order": job.sequence_order,
+            "job_id": str(job.id),
+            "title": job.name,
+            "type": job.job_type.value,
+            "is_optional": not job.is_mandatory,
+            "status": st,
+            "completion_percentage": completion,
+            "score": float(prog.score) if prog and prog.score else None,
+            "is_current": False,
+        }
+
+        if st == "COMPLETED":
+            completed_count += 1
+        elif not found_current:
+            step["is_current"] = True
+            found_current = True
+
+        total_completion += completion
+        pipeline_steps.append(step)
+
+    overall_progress = (total_completion / len(pipeline_jobs)) if pipeline_jobs else 0.0
+
+    # ── Leaderboard ──────────────────────────────────────────────────────────
+    batch_mavericks = db.query(Maverick).filter(
+        Maverick.current_batch_id == batch_id
+    ).all()
+
+    leaderboard = []
+    for mate in batch_mavericks:
+        attempts = db.query(AssessmentAttempt).filter(
+            AssessmentAttempt.maverick_id == mate.id,
+            AssessmentAttempt.batch_id == batch_id
+        ).all()
+
+        avg_score = 0.0
+        passed_count = 0
+        if attempts:
+            total = sum(
+                (float(a.marks_obtained) / float(a.max_marks) * 100)
+                for a in attempts if a.max_marks > 0
+            )
+            avg_score = total / len(attempts)
+            passed_count = sum(1 for a in attempts if a.passed)
+
+        mate_progress = db.query(MaverickJobProgress).filter(
+            MaverickJobProgress.maverick_id == mate.id,
+            MaverickJobProgress.batch_id == batch_id
+        ).all()
+        avg_progress = (
+            sum(float(p.completion_percentage or 0) for p in mate_progress) / len(pipeline_jobs)
+        ) if pipeline_jobs and mate_progress else 0.0
+
+        combined = (avg_score * 0.7) + (avg_progress * 0.3)
+        leaderboard.append({
+            "id": str(mate.id),
+            "name": mate.name,
+            "average_score": round(avg_score, 2),
+            "total_assessments": len(attempts),
+            "passed_count": passed_count,
+            "overall_progress": round(avg_progress, 2),
+            "combined_score": combined,
+            "is_current_user": mate.id == maverick.id,
+        })
+
+    leaderboard.sort(key=lambda x: x["combined_score"], reverse=True)
+    for rank, item in enumerate(leaderboard, 1):
+        item["rank"] = rank
+        del item["combined_score"]
+
+    return {
+        "batch_id": str(batch.id),
+        "batch_name": batch.name,
+        "pipeline_name": pipeline.name if pipeline else "Unknown",
+        "trainer_name": trainer.name if trainer else "No Trainer Assigned",
+        "status": batch.status.value,
+        "start_date": batch.start_date.isoformat() if batch.start_date else None,
+        "end_date": batch.end_date.isoformat() if batch.end_date else None,
+        "total_students": len(batch_mavericks),
+        "my_progress": {
+            "overall_completion": round(overall_progress, 1),
+            "completed_jobs": completed_count,
+            "total_jobs": len(pipeline_jobs),
+            "steps": pipeline_steps,
+        },
+        "leaderboard": leaderboard,
+    }
+
+
+@router.get("/schedule")
+async def get_my_schedule(
+    maverick: Maverick = Depends(get_maverick_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Full training schedule for the maverick across ALL enrolled batches.
+    Merges TrainingSession records + Assessment scheduled dates + BatchJobSchedule
+    entries so nothing is ever missing regardless of which model the trainer used.
+    Shows all items (past and future) so the maverick can see the complete picture.
+    """
+    # ── 1. Collect all batch IDs ──────────────────────────────────────────────
+    rows = db.query(distinct(MaverickJobProgress.batch_id)).filter(
+        MaverickJobProgress.maverick_id == maverick.id
+    ).all()
+    batch_ids = set(str(r[0]) for r in rows)
+    if maverick.current_batch_id:
+        batch_ids.add(str(maverick.current_batch_id))
+
+    if not batch_ids:
+        return {"schedule": [], "total": 0}
+
+    # Pre-fetch batch name map
+    batches = db.query(Batch).filter(Batch.id.in_(batch_ids)).all()
+    batch_name_map = {str(b.id): b.name for b in batches}
+
+    items = []
+
+    # ── 2. TrainingSession records ────────────────────────────────────────────
+    training_sessions = db.query(TrainingSession).filter(
+        TrainingSession.batch_id.in_(batch_ids),
+        TrainingSession.status != SessionStatus.CANCELLED,
+    ).order_by(TrainingSession.scheduled_date).all()
+
+    for s in training_sessions:
+        items.append({
+            "id": str(s.id),
+            "type": "TRAINING",
+            "title": s.title,
+            "description": s.description or "",
+            "batch_name": batch_name_map.get(str(s.batch_id), ""),
+            "scheduled_date": s.scheduled_date.isoformat() if s.scheduled_date else None,
+            "duration_minutes": s.duration_minutes or 0,
+            "duration_hours": round((s.duration_minutes or 0) / 60, 1),
+            "location": s.location or "",
+            "link": s.meeting_link or "",
+            "link_label": "Join Meeting" if s.meeting_link else "",
+            "status": s.status.value,
+            "is_online": bool(s.meeting_link),
+        })
+
+    # ── 3. Assessment records with a scheduled date ───────────────────────────
+    assessments = db.query(Assessment).filter(
+        Assessment.batch_id.in_(batch_ids),
+        Assessment.scheduled_date.isnot(None),
+    ).order_by(Assessment.scheduled_date).all()
+
+    for a in assessments:
+        items.append({
+            "id": str(a.id),
+            "type": "ASSESSMENT",
+            "title": a.title,
+            "description": a.description or "",
+            "batch_name": batch_name_map.get(str(a.batch_id), ""),
+            "scheduled_date": a.scheduled_date.isoformat() if a.scheduled_date else None,
+            "duration_minutes": a.duration_minutes or 0,
+            "duration_hours": round((a.duration_minutes or 0) / 60, 1),
+            "location": "",
+            "link": a.assessment_link or "",
+            "link_label": "Open Assessment" if a.assessment_link else "",
+            "status": "SCHEDULED",
+            "is_online": True,
+            "max_marks": float(a.max_marks),
+            "passing_marks": float(a.passing_marks),
+        })
+
+    # ── 4. BatchJobSchedule records (published, with a meeting/assessment link) ─
+    bjs_records = db.query(BatchJobSchedule).filter(
+        BatchJobSchedule.batch_id.in_(batch_ids),
+        BatchJobSchedule.is_published == True,
+        BatchJobSchedule.status.notin_([
+            JobScheduleStatus.NOT_SCHEDULED,
+            JobScheduleStatus.CANCELLED,
+        ]),
+    ).all()
+
+    # Collect IDs already covered by the above two queries to avoid duplicates
+    seen_assessment_ids = {str(a.id) for a in assessments}
+
+    for bjs in bjs_records:
+        job = db.query(PipelineJob).filter(PipelineJob.id == bjs.pipeline_job_id).first()
+        if not job:
+            continue
+
+        job_type = job.job_type.value if job.job_type else "TRAINING"
+        scheduled_date = bjs.scheduled_start_date
+
+        # Skip assessment entries already captured from Assessment table
+        if job_type == "ASSESSMENT" and bjs.assessment_id and str(bjs.assessment_id) in seen_assessment_ids:
+            continue
+
+        link = ""
+        link_label = ""
+        description = bjs.trainer_notes or job.description or ""
+        max_marks = None
+        passing_marks = None
+
+        if job_type == "ASSESSMENT" and bjs.assessment_id:
+            linked_assessment = db.query(Assessment).filter(
+                Assessment.id == bjs.assessment_id
+            ).first()
+            if linked_assessment:
+                if not scheduled_date:
+                    scheduled_date = linked_assessment.scheduled_date
+                link = linked_assessment.assessment_link or ""
+                link_label = "Open Assessment" if link else ""
+                description = description or linked_assessment.description or ""
+                max_marks = float(linked_assessment.max_marks)
+                passing_marks = float(linked_assessment.passing_marks)
+        elif job_type == "TRAINING":
+            link = bjs.meeting_link or ""
+            link_label = "Join Meeting" if link else ""
+
+        entry = {
+            "id": f"bjs-{str(bjs.id)}",
+            "type": job_type,
+            "title": job.name,
+            "description": description,
+            "batch_name": batch_name_map.get(str(bjs.batch_id), ""),
+            "scheduled_date": scheduled_date.isoformat() if scheduled_date else None,
+            "duration_minutes": 0,
+            "duration_hours": 0,
+            "location": "",
+            "link": link,
+            "link_label": link_label,
+            "status": bjs.status.value,
+            "is_online": bool(link),
+        }
+        if max_marks is not None:
+            entry["max_marks"] = max_marks
+            entry["passing_marks"] = passing_marks
+
+        items.append(entry)
+
+    # ── 5. Sort by scheduled_date (nulls last) ────────────────────────────────
+    items.sort(key=lambda x: (x["scheduled_date"] is None, x["scheduled_date"] or ""))
+
+    return {"schedule": items, "total": len(items)}

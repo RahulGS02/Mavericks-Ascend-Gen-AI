@@ -18,11 +18,11 @@ DANGEROUS_KEYWORDS = [
     'COPY', 'BULK', 'IMPORT', 'EXPORT'
 ]
 
-# Suspicious patterns that might indicate injection attempts
+# Suspicious patterns that might indicate injection attempts.
+# Note: comment patterns (-- and /* */) are NOT listed here because comments
+# are stripped before this check runs. Listing them would cause false positives
+# when -- or /* appear inside quoted string literals.
 SUSPICIOUS_PATTERNS = [
-    r';\s*--',  # Comment after semicolon
-    r'--\s*\w',  # SQL comment markers
-    r'/\*.*?\*/',  # Multi-line comments
     r';\s*SELECT',  # Multiple statements
     r';\s*INSERT',
     r';\s*UPDATE',
@@ -44,29 +44,32 @@ SUSPICIOUS_PATTERNS = [
 
 def validate_sql_query(sql: str) -> Tuple[bool, str, List[str]]:
     """
-    Validates that SQL query is safe to execute
-    
+    Validates that SQL query is safe to execute.
+
+    Strips SQL comments before checking so that AI-generated queries with
+    inline comments don't cause false rejections.
+
     Args:
         sql: The SQL query string to validate
-    
+
     Returns:
         Tuple of (is_valid: bool, error_message: str, warnings: List[str])
-        
-    Example:
-        is_valid, error, warnings = validate_sql_query("SELECT * FROM users")
-        if not is_valid:
-            print(f"Invalid SQL: {error}")
-        if warnings:
-            print(f"Warnings: {warnings}")
     """
     warnings = []
-    
+
     if not sql or not sql.strip():
         return False, "SQL query is empty", []
-    
+
+    # Pre-strip comments so they don't trigger false rejections.
+    # The sanitize step will do this again; this just avoids rejecting
+    # AI-generated SQL that happens to include comments.
+    sql = re.sub(r"/\*.*?\*/", " ", sql, flags=re.DOTALL)
+    sql = re.sub(r"--[^\n]*", " ", sql)
+    sql = re.sub(r"[ \t]+", " ", sql).strip()
+
     sql_stripped = sql.strip()
     sql_upper = sql_stripped.upper()
-    
+
     # Check 1: Must start with SELECT
     if not sql_upper.startswith('SELECT'):
         return False, "Only SELECT queries are allowed. Query must start with SELECT.", []
@@ -96,21 +99,20 @@ def validate_sql_query(sql: str) -> Tuple[bool, str, List[str]]:
             return False, "Semicolon detected in middle of query. Only single SELECT queries allowed.", []
         warnings.append("Query has trailing semicolon (will be removed)")
     
-    # Check 5: Check for SQL comment markers
-    if '--' in sql:
-        return False, "SQL comment markers (--) are not allowed", []
-    
-    if '/*' in sql or '*/' in sql:
-        return False, "Multi-line comment markers (/* */) are not allowed", []
-    
+    # Check 5: Confirm no remaining comment markers (they were stripped at entry;
+    # if any survived, that means they were inside string literals — still safe
+    # to allow, but warn).
+    if '--' in sql or '/*' in sql:
+        warnings.append("SQL appears to contain comment-like strings inside quoted literals (ignored)")
+
     # Check 6: Check for suspicious patterns
     for pattern in SUSPICIOUS_PATTERNS:
         if re.search(pattern, sql, re.IGNORECASE):
             return False, f"Suspicious SQL pattern detected: {pattern}", []
     
-    # Check 7: Verify LIMIT clause exists (required for safety)
+    # Check 7: No LIMIT is fine — sanitize_sql_query() adds LIMIT 1000 automatically
     if 'LIMIT' not in sql_upper:
-        warnings.append("Query does not have LIMIT clause - adding LIMIT 1000 for safety")
+        warnings.append("No LIMIT clause — system will add LIMIT 1000 safety cap")
     
     # Check 8: Check for nested queries (subqueries are OK, but be cautious)
     select_count = sql_upper.count('SELECT')
@@ -155,23 +157,38 @@ def validate_sql_query(sql: str) -> Tuple[bool, str, List[str]]:
 
 def sanitize_sql_query(sql: str) -> str:
     """
-    Sanitizes SQL query by removing dangerous elements
-    
+    Sanitizes SQL query by removing dangerous/problematic elements.
+
+    Strips SQL comments (-- and /* */), removes trailing semicolon,
+    and enforces a LIMIT cap of 1000.
+
     Args:
         sql: The SQL query to sanitize
-    
+
     Returns:
         Sanitized SQL query string
     """
-    # Remove trailing semicolon
     sql = sql.strip()
+
+    # Remove block comments (/* ... */) — may span multiple lines
+    sql = re.sub(r"/\*.*?\*/", " ", sql, flags=re.DOTALL)
+
+    # Remove line comments (-- to end of line)
+    sql = re.sub(r"--[^\n]*", " ", sql)
+
+    # Collapse extra whitespace introduced by comment removal
+    sql = re.sub(r"[ \t]+", " ", sql)
+    sql = re.sub(r"\n{3,}", "\n\n", sql)
+    sql = sql.strip()
+
+    # Remove trailing semicolon
     if sql.endswith(';'):
         sql = sql[:-1].strip()
-    
+
     # Add LIMIT if not present
     if 'LIMIT' not in sql.upper():
         sql = f"{sql} LIMIT 1000"
-    
+
     # Ensure LIMIT is not too high
     limit_match = re.search(r'LIMIT\s+(\d+)', sql, re.IGNORECASE)
     if limit_match:
@@ -179,7 +196,7 @@ def sanitize_sql_query(sql: str) -> str:
         if limit_value > 1000:
             sql = re.sub(r'LIMIT\s+\d+', 'LIMIT 1000', sql, flags=re.IGNORECASE)
             logger.warning(f"LIMIT reduced from {limit_value} to 1000 for safety")
-    
+
     return sql
 
 

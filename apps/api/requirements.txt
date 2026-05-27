@@ -1,5 +1,5 @@
-# AZURE DEPLOYMENT - PYTHON 3.11 COMPATIBLE
-# Full modern stack with Pydantic v2
+# PYTHON 3.13 COMPATIBLE — Azure AI Foundry deployment
+# Pydantic v2 modern stack
 
 # FastAPI - Modern version with Pydantic v2 support
 fastapi==0.115.4
@@ -8,14 +8,16 @@ gunicorn==21.2.0
 python-multipart==0.0.6
 
 # Database
-sqlalchemy==2.0.23
-psycopg2-binary==2.9.9
+# sqlalchemy 2.0.36+ fixes Python 3.13 TypingOnly __static_attributes__ crash (2.0.23 breaks)
+# psycopg2-binary 2.9.10+ added Python 3.13 pre-built wheels
+sqlalchemy>=2.0.36
+psycopg2-binary>=2.9.10
 alembic==1.13.0
 
 # Authentication
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
-bcrypt==4.1.1
+bcrypt>=4.2.0
 
 # Settings - PYDANTIC V2 (Modern, faster)
 pydantic==2.8.2
@@ -23,38 +25,31 @@ pydantic-settings==2.3.4
 python-dotenv==1.0.0
 email-validator==2.1.0.post1
 
-# Excel Processing - Use latest (has Python 3.14 wheels)
+# Excel Processing
 pandas
 openpyxl
 
 # Document Processing
+# Pillow 10.3.0+ added Python 3.13 wheels
 PyPDF2==3.0.1
 python-docx==1.1.0
-pdfplumber==0.10.3
-Pillow==10.2.0
+pdfplumber>=0.11.0
+Pillow>=10.3.0
 
 # Utilities
 python-dateutil==2.8.2
 requests==2.31.0
 urllib3==2.1.0
 
-# File Storage - Latest version
+# File Storage
 supabase
 
-# OCR - DISABLED (causes Rust compilation errors on Python 3.14)
-# pytesseract
-# pdf2image
-# Pillow
-# pdfplumber
+# AI/ML - Azure AI Foundry via OpenAI-compatible SDK (Primary)
+# Endpoint: https://mavericks-ai.services.ai.azure.com/api/projects/proj-default-ai/openai/v1
+openai>=1.60.0
 
-# AI/ML - Multi-Provider Support
-# Anthropic Claude API (Recommended for Production & Local)
-anthropic==0.25.2
+# Anthropic Claude API (Fallback / optional)
+anthropic>=0.40.0
 
-# Auggie SDK (Alternative provider)
-auggie-sdk
-
-# Testing - Optional (for development)
-# pytest
-# pytest-asyncio
-httpx  # Required for test scripts and Anthropic client
+# Testing / HTTP client (required by Anthropic SDK and test scripts)
+httpx

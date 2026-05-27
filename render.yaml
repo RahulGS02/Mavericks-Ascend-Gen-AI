@@ -28,7 +28,25 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: AI_ENABLED
-        value: false
+        value: true
+      - key: AI_PROVIDER
+        value: azure
+      - key: AZURE_AI_ENDPOINT
+        sync: false
+      - key: AZURE_AI_API_KEY
+        sync: false
+      - key: AZURE_AI_MODEL
+        value: gpt-4o-mini
+      - key: AZURE_AI_MAX_TOKENS
+        value: 4000
+      - key: AZURE_AI_TEMPERATURE
+        value: 0.7
+      - key: AI_RESUME_PARSING_ENABLED
+        value: true
+      - key: AI_SKILL_EXTRACTION_ENABLED
+        value: true
+      - key: AI_PERFORMANCE_INSIGHTS_ENABLED
+        value: true
       - key: MAX_UPLOAD_SIZE
         value: 10485760
       - key: MAX_RESUME_SIZE

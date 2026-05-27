@@ -30,7 +30,7 @@ load_dotenv()
 
 # Import routers
 from app.api.v1 import auth, files, mavericks, hr_workflow, hr_dashboard, maverick_dashboard, trainer_dashboard, trainer_analytics, pipelines, batches, batch_schedule, job_progress, training, assessments, reattempts, deployments, ai_status, resume_parser, batch_suggestions, skill_proficiency, trainer_feedback_api, analytics, trainers, manager_dashboard, manager_search, requirement_workflow, notifications, admin_users, admin_audit, admin_dashboard, admin_settings, admin_analytics
-from app.api.v1.endpoints import nl_query, talent_search
+from app.api.v1.endpoints import nl_query, talent_search, chatbot
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -125,6 +125,9 @@ app.include_router(nl_query.router, prefix="/api/v1/nl-query", tags=["Super Admi
 
 # AI Talent Search (HR & Manager)
 app.include_router(talent_search.router, prefix="/api/v1/talent-search", tags=["AI Talent Search"])
+
+# AI Chatbot — all authenticated users, role-specific
+app.include_router(chatbot.router, prefix="/api/v1/chatbot", tags=["AI Chatbot"])
 
 if __name__ == "__main__":
     import uvicorn

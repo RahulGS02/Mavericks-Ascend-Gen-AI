@@ -2,7 +2,7 @@
 Maverick schemas for request/response validation
 """
 from pydantic import BaseModel, EmailStr, Field, field_serializer, ConfigDict
-from typing import Optional, List
+from typing import Any, Dict, Optional, List
 from datetime import datetime
 from uuid import UUID
 from ..models.maverick import ProfileStatus, DeploymentStatus
@@ -63,6 +63,11 @@ class MaverickResponse(BaseModel):
     review_notes: Optional[str]
     created_at: datetime
     updated_at: datetime
+
+    # AI-parsed resume data
+    ai_extracted_skills: Optional[List[str]] = None
+    ai_summary: Optional[str] = None
+    ai_resume_data: Optional[Dict[str, Any]] = None
 
     @field_serializer('profile_status', 'deployment_status')
     def serialize_enum(self, value):

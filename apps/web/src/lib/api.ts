@@ -65,15 +65,45 @@ export const authAPI = {
 };
 
 // Natural Language Query API (Super Admin)
+//
+// max_rows is intentionally OPTIONAL and defaults to undefined (not sent).
+// When omitted the backend auto-detects the intended row count from the
+// natural language query text (e.g. "Top 10" → 10, "Show all" → no limit).
+// Only pass maxRows when you want to override the query-text detection.
 export const nlQueryAPI = {
-  search: (query: string, maxRows: number = 100) =>
-    api.post('/nl-query/search', { query, max_rows: maxRows }),
+  search: (query: string, maxRows?: number) =>
+    api.post('/nl-query/search', {
+      query,
+      ...(maxRows !== undefined ? { max_rows: maxRows } : {}),
+    }),
 
-  downloadExcel: (query: string, maxRows: number = 100) =>
+  downloadExcel: (query: string, maxRows?: number) =>
     api.post('/nl-query/search/download',
-      { query, max_rows: maxRows },
+      {
+        query,
+        ...(maxRows !== undefined ? { max_rows: maxRows } : {}),
+      },
       { responseType: 'blob' }
     ),
+};
+
+// AI Chatbot API — all roles
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export const chatbotAPI = {
+  /** Send a message and get a response (with conversation history). */
+  sendMessage: (message: string, history: ChatMessage[]) =>
+    api.post('/chatbot/message', {
+      message,
+      conversation_history: history,
+    }),
+
+  /** Fetch role-specific starter suggestions for the chat UI. */
+  getSuggestions: () =>
+    api.get('/chatbot/suggestions'),
 };
 
 // AI-Powered Talent Search API (HR, Manager, Super Admin)

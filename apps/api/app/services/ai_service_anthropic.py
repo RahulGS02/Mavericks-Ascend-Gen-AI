@@ -410,6 +410,27 @@ class AIServiceMultiProvider:
         logger.error(f"Auggie SDK failed after {max_retries} attempts. Last error: {last_error}")
         return None
 
+    async def chat_with_history(
+        self,
+        messages: List[Dict[str, Any]],
+        system_prompt: str,
+        max_tokens: int = 800,
+        temperature: float = 0.7,
+        feature: str = "chatbot",
+    ) -> Optional[str]:
+        """Multi-turn chat — builds a single prompt from conversation history."""
+        history_text = ""
+        for msg in messages:
+            role = msg.get("role", "user").capitalize()
+            history_text += f"{role}: {msg.get('content', '')}\n"
+        prompt = f"Conversation so far:\n{history_text}\nAssistant:"
+        return await self._call_ai(
+            prompt=prompt,
+            system_prompt=system_prompt,
+            max_tokens=max_tokens,
+            feature=feature,
+        )
+
     async def parse_resume_comprehensive(
         self,
         resume_text: str
@@ -526,6 +547,131 @@ Return ONLY valid JSON:
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse insights JSON: {e}")
             return None
+
+    async def generate_sql_from_natural_language(
+        self,
+        natural_query: str,
+        schema_context: str,
+        intended_limit: Optional[int] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Convert a natural language query into a safe PostgreSQL SELECT statement.
+
+        Args:
+            natural_query:  Human-readable query description.
+            schema_context: Full DB schema context string.
+            intended_limit: Row count extracted from the natural language.
+
+        Returns:
+            Dict with keys ``sql``, ``explanation``, ``tables_used``,
+            or None if the AI call fails or the service is unavailable.
+        """
+        import re
+
+        if intended_limit:
+            # User explicitly asked for a specific count — enforce it hard
+            limit_instruction = (
+                f"CRITICAL: The user asked for exactly {intended_limit} rows. "
+                f"You MUST use LIMIT {intended_limit} in the outermost SELECT. "
+                f"Do NOT use a higher LIMIT."
+            )
+            limit_rule4 = (
+                f"4. The outermost SELECT MUST end with LIMIT {intended_limit} — "
+                f"exactly the count the user requested. No other LIMIT value is acceptable.\n"
+            )
+        else:
+            # No specific count requested — return ALL matching records.
+            # The system will add a safety cap of 1000 automatically via sanitize_sql_query().
+            limit_instruction = (
+                "The user did NOT specify a row limit. "
+                "Do NOT add an arbitrary LIMIT clause to the SQL. "
+                "Return ALL records that satisfy the query conditions. "
+                "The system will enforce a maximum safety cap of 1000 rows automatically."
+            )
+            limit_rule4 = (
+                "4. Do NOT add an arbitrary LIMIT clause. "
+                "Only include LIMIT when the user explicitly asked for a specific number of rows. "
+                "The system handles result-set capping automatically.\n"
+            )
+
+        system_prompt = (
+            "You are an expert PostgreSQL database analyst. "
+            "Convert natural language to valid, safe PostgreSQL SELECT statements.\n\n"
+            "STRICT RULES — follow every one:\n"
+            "1. Return ONLY valid JSON — no markdown fences, no prose outside JSON.\n"
+            "2. ONLY generate SELECT statements. NEVER INSERT/UPDATE/DELETE/DROP/TRUNCATE.\n"
+            "3. NEVER include SQL comments (-- or /* */) inside the SQL string.\n"
+            + limit_rule4 +
+            "5. AVOID JOIN INFLATION: when the question is about 'students', 'mavericks', "
+            "   or 'candidates' (one row per person), do NOT JOIN maverick_skills — instead "
+            "   use the `skills` JSONB column (e.g. skills @> '[\"Python\"]'::jsonb) or "
+            "   jsonb_array_length(). Only JOIN maverick_skills when the question explicitly "
+            "   asks for per-skill detail like proficiency scores.\n"
+            "6. If you must JOIN a table that produces multiple rows per student, use "
+            "   SELECT DISTINCT or GROUP BY to guarantee one row per student.\n"
+            f"7. {limit_instruction}"
+        )
+
+        sql_example = (
+            f'"sql": "SELECT ... FROM ... ORDER BY ... LIMIT {intended_limit}",'
+            if intended_limit
+            else '"sql": "SELECT ... FROM ... WHERE ... ORDER BY ...",'
+        )
+
+        prompt = (
+            f"Database Schema:\n{schema_context}\n\n"
+            f"Natural Language Query: {natural_query}\n"
+            + (f"Required row count: {intended_limit}\n" if intended_limit else "Return all matching records.\n")
+            + "\nGenerate a PostgreSQL SELECT query for this request.\n"
+            "Return ONLY this JSON (no markdown fences, no extra keys):\n"
+            "{\n"
+            f"  {sql_example}\n"
+            '  "explanation": "One sentence: what this query returns and why",\n'
+            '  "tables_used": ["table1", "table2"]\n'
+            "}"
+        )
+
+        response = await self._call_ai(
+            prompt=prompt,
+            system_prompt=system_prompt,
+            feature="nl_to_sql",
+            max_tokens=1200,
+        )
+
+        if not response:
+            logger.error("NL-to-SQL: AI returned no result for query: %s", natural_query[:100])
+            return None
+
+        # Strip markdown fences if present
+        cleaned = response.strip()
+        if cleaned.startswith("```json"):
+            cleaned = cleaned[7:]
+        elif cleaned.startswith("```"):
+            cleaned = cleaned[3:]
+        if cleaned.endswith("```"):
+            cleaned = cleaned[:-3]
+        cleaned = cleaned.strip()
+
+        try:
+            parsed = json.loads(cleaned)
+        except json.JSONDecodeError as exc:
+            logger.error("NL-to-SQL: JSON parse error: %s — raw: %s", exc, cleaned[:200])
+            return None
+
+        if "sql" not in parsed:
+            logger.error("NL-to-SQL: Missing 'sql' key in AI response")
+            return None
+
+        sql = parsed["sql"]
+        sql = re.sub(r"/\*.*?\*/", " ", sql, flags=re.DOTALL)
+        sql = re.sub(r"--[^\n]*", " ", sql)
+        sql = sql.strip()
+
+        return {
+            "sql": sql,
+            "explanation": parsed.get("explanation", "SQL generated from natural language query"),
+            "tables_used": parsed.get("tables_used", []),
+        }
 
     def get_usage_stats(self) -> Dict[str, Any]:
         """Get detailed usage statistics"""

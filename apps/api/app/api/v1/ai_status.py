@@ -46,13 +46,13 @@ async def get_ai_status(
         enabled=settings.AI_ENABLED,
         available=is_available,
         environment=settings.ENVIRONMENT,
-        model=settings.AI_MODEL,
+        model=settings.AI_MODEL_DISPLAY,
         features={
             "resume_parsing": settings.AI_RESUME_PARSING_ENABLED,
             "skill_extraction": settings.AI_SKILL_EXTRACTION_ENABLED,
             "performance_insights": settings.AI_PERFORMANCE_INSIGHTS_ENABLED
         },
-        usage=ai_service.get_usage_stats()
+        usage=ai_service.get_usage_stats() if ai_service else {}
     )
 
 
@@ -80,9 +80,17 @@ async def get_ai_config(
     Returns detailed AI configuration for administrators.
     """
 
+    # Determine if the active provider has its key configured
+    if settings.AI_PROVIDER == "azure":
+        key_configured = bool(settings.AZURE_AI_API_KEY)
+    elif settings.AI_PROVIDER == "anthropic":
+        key_configured = bool(settings.ANTHROPIC_API_KEY)
+    else:
+        key_configured = bool(settings.AI_API_KEY)
+
     return AIConfigResponse(
         enabled=settings.AI_ENABLED,
-        model=settings.AI_MODEL,
+        model=settings.AI_MODEL_DISPLAY,
         max_tokens=settings.AI_MAX_TOKENS,
         temperature=settings.AI_TEMPERATURE,
         daily_limit=settings.AI_DAILY_REQUEST_LIMIT,
@@ -92,13 +100,16 @@ async def get_ai_config(
             "skill_extraction": settings.AI_SKILL_EXTRACTION_ENABLED,
             "performance_insights": settings.AI_PERFORMANCE_INSIGHTS_ENABLED
         },
-        api_key_configured=settings.AI_API_KEY is not None and len(settings.AI_API_KEY) > 0
+        api_key_configured=key_configured
     )
 
 
 class AIDetailedStatsResponse(BaseModel):
     """Detailed AI statistics (Super Admin only)"""
+    is_enabled: bool
+    # Session stats (in-memory, resets on server restart)
     requests_today: int
+    total_requests: int       # alias for requests_today — used by frontend
     input_tokens: int
     output_tokens: int
     total_tokens: int
@@ -113,11 +124,22 @@ class AIDetailedStatsResponse(BaseModel):
     daily_limit: int
     rate_limit_per_minute: int
     last_reset: str
+    # Lifetime DB-backed stats
+    lifetime_requests: int
+    lifetime_input_tokens: int
+    lifetime_output_tokens: int
+    lifetime_total_tokens: int
+    lifetime_cost_usd: float
+    # Per-feature DB breakdown
+    lifetime_by_feature: Dict[str, Dict[str, Any]]
+    # Daily usage (last 30 days from DB)
+    daily_usage: Dict[str, int]
 
 
 @router.get("/stats/detailed", response_model=AIDetailedStatsResponse)
 async def get_detailed_ai_stats(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     """
     Get detailed AI usage statistics with cost breakdown
@@ -125,21 +147,96 @@ async def get_detailed_ai_stats(
     **Required role**: Super Admin ONLY
 
     Returns comprehensive AI usage metrics including:
+    - Session stats (in-memory since last server start)
+    - Lifetime stats (from DB — persists across restarts)
     - Token usage by feature
     - Cost breakdown
-    - Error rates
-    - Performance metrics
+    - Daily usage (last 30 days)
     """
-    # Verify user is super admin
     if current_user.role != UserRole.SUPER_ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only super admins can access detailed AI statistics"
         )
 
-    stats = ai_service.get_detailed_stats()
+    if not ai_service:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI service not initialised"
+        )
 
-    return AIDetailedStatsResponse(**stats)
+    # ── In-memory session stats ───────────────────────────────────────────────
+    session = ai_service.get_detailed_stats()
+    req = session.get("requests_today", 0)
+
+    # ── DB lifetime stats ─────────────────────────────────────────────────────
+    from app.models.ai_usage import AIUsageLog
+    from datetime import date, timedelta
+
+    db_total_requests = db.query(func.count(AIUsageLog.id)).scalar() or 0
+    db_input_tokens   = db.query(func.sum(AIUsageLog.input_tokens)).scalar() or 0
+    db_output_tokens  = db.query(func.sum(AIUsageLog.output_tokens)).scalar() or 0
+    db_total_tokens   = db.query(func.sum(AIUsageLog.total_tokens)).scalar() or 0
+    db_total_cost     = float(db.query(func.sum(AIUsageLog.cost_usd)).scalar() or 0)
+
+    # Per-feature breakdown from DB
+    feature_rows = db.query(
+        AIUsageLog.feature,
+        func.count(AIUsageLog.id).label("count"),
+        func.sum(AIUsageLog.input_tokens).label("input_tokens"),
+        func.sum(AIUsageLog.output_tokens).label("output_tokens"),
+        func.sum(AIUsageLog.total_tokens).label("total_tokens"),
+        func.sum(AIUsageLog.cost_usd).label("cost_usd"),
+    ).group_by(AIUsageLog.feature).all()
+
+    lifetime_by_feature = {
+        row.feature: {
+            "count":         row.count,
+            "input_tokens":  int(row.input_tokens or 0),
+            "output_tokens": int(row.output_tokens or 0),
+            "total_tokens":  int(row.total_tokens or 0),
+            "cost_usd":      float(row.cost_usd or 0),
+        }
+        for row in feature_rows
+    }
+
+    # Daily usage — last 30 days
+    thirty_days_ago = date.today() - timedelta(days=29)
+    daily_rows = db.query(
+        func.date(AIUsageLog.created_at).label("day"),
+        func.count(AIUsageLog.id).label("count"),
+    ).filter(
+        AIUsageLog.created_at >= thirty_days_ago
+    ).group_by(func.date(AIUsageLog.created_at)).order_by("day").all()
+
+    daily_usage = {str(row.day): row.count for row in daily_rows}
+
+    return AIDetailedStatsResponse(
+        is_enabled=settings.AI_ENABLED,
+        requests_today=req,
+        total_requests=req,          # alias — same value
+        input_tokens=session.get("input_tokens", 0),
+        output_tokens=session.get("output_tokens", 0),
+        total_tokens=session.get("total_tokens", 0),
+        total_cost_usd=session.get("total_cost_usd", 0.0),
+        avg_tokens_per_request=session.get("avg_tokens_per_request", 0.0),
+        error_count=session.get("error_count", 0),
+        retry_count=session.get("retry_count", 0),
+        error_rate_percentage=session.get("error_rate_percentage", 0.0),
+        cost_per_request_usd=session.get("cost_per_request_usd", 0.0),
+        cost_breakdown=session.get("cost_breakdown", {"input_cost_usd": 0.0, "output_cost_usd": 0.0}),
+        requests_by_feature=session.get("requests_by_feature", {}),
+        daily_limit=session.get("daily_limit", settings.AI_DAILY_REQUEST_LIMIT),
+        rate_limit_per_minute=session.get("rate_limit_per_minute", settings.AI_RATE_LIMIT_PER_MINUTE),
+        last_reset=session.get("last_reset", ""),
+        lifetime_requests=db_total_requests,
+        lifetime_input_tokens=int(db_input_tokens),
+        lifetime_output_tokens=int(db_output_tokens),
+        lifetime_total_tokens=int(db_total_tokens),
+        lifetime_cost_usd=db_total_cost,
+        lifetime_by_feature=lifetime_by_feature,
+        daily_usage=daily_usage,
+    )
 
 
 class AICostAnalyticsResponse(BaseModel):

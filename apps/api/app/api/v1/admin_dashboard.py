@@ -60,25 +60,25 @@ async def get_system_stats(
     # Deployment statistics
     total_deployments = db.query(Deployment).count()
     
-    # AI statistics
-    ai_stats = ai_service.get_stats()
-    ai_detailed_stats = ai_service.get_detailed_stats()
-    
-    # Get AI costs
+    # AI statistics — from in-memory tracker (current server session)
     ai_cost_today = 0.0
     ai_cost_this_month = 0.0
     ai_requests_today = 0
-    
-    if ai_stats.get("total_cost_usd"):
-        # For simplicity, use current stats as "this month"
-        # In production, you'd track daily costs in database
-        ai_cost_this_month = ai_stats["total_cost_usd"]
-        ai_requests_today = ai_stats.get("total_requests", 0)
-        
-        # Estimate today's cost (simplified)
-        if ai_stats.get("total_requests", 0) > 0:
-            cost_per_request = ai_stats["total_cost_usd"] / ai_stats["total_requests"]
-            ai_cost_today = cost_per_request * min(ai_requests_today, 100)  # Rough estimate
+
+    try:
+        if ai_service is not None:
+            ai_stats = ai_service.get_usage_stats()
+            ai_requests_today   = ai_stats.get("requests_today", 0)
+            session_cost        = float(ai_stats.get("total_cost_usd", 0.0))
+            ai_cost_today       = round(session_cost, 4)
+
+        # Lifetime cost from DB (persists across restarts)
+        from app.models.ai_usage import AIUsageLog
+        db_total_cost = db.query(func.sum(AIUsageLog.cost_usd)).scalar()
+        ai_cost_this_month = float(db_total_cost) if db_total_cost else session_cost if ai_service else 0.0
+    except Exception as _ai_err:
+        import logging as _log
+        _log.getLogger(__name__).warning("AI stats fetch failed: %s", _ai_err)
     
     # Failed login attempts (from audit logs)
     today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
